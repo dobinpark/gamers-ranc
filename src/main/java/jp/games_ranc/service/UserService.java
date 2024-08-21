@@ -22,11 +22,11 @@ public class UserService {
     }
 
     public User findUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(
+        return userRepository.findById(String.valueOf(id)).orElseThrow(
                 () -> new UserNotFoundException("User with id " + id + " not found!"));
     }
 
     public void delete(Long id) {
-        userRepository.deleteById(id);
+        userRepository.deleteById(String.valueOf(id));
     }
 }

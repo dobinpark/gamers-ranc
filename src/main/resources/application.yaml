@@ -1,13 +1,18 @@
+#spring:
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/gamesRanC
+#    username: postgres
+#    password: 1234
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+#        format_sql: true
+#    show-sql: true
+
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/gamesRanC
-    username: postgres
-    password: 1234
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/games
