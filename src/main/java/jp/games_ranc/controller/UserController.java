@@ -20,14 +20,14 @@ public class UserController {
     public String getAllUsers(Model model) {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
-        return "user-list";  // 사용자 리스트를 보여주는 뷰 (예: user-list.html)
+        return "user";  // 사용자 리스트를 보여주는 뷰 (예: user-list.html)
     }
 
     @GetMapping("/find/{id}")
     public String getUserById(@PathVariable("id") Long id, Model model) {
         User user = userService.findUserById(id);
         model.addAttribute("user", user);
-        return "user-detail";  // 사용자 세부 정보를 보여주는 뷰 (예: user-detail.html)
+        return "userDetail";  // 사용자 세부 정보를 보여주는 뷰 (예: user-detail.html)
     }
 
     @GetMapping("/add")
@@ -39,14 +39,14 @@ public class UserController {
     @PostMapping("/add")
     public String addUser(@ModelAttribute("user") User user, Model model) {
         userService.addUser(user);
-        return "redirect:/user/find/all";  // 사용자 리스트 페이지로 리다이렉트
+        return "redirect:/find/all";  // 사용자 리스트 페이지로 리다이렉트
     }
 
     @GetMapping("/update/{id}")
     public String updateUserForm(@PathVariable("id") Long id, Model model) {
         User user = userService.findUserById(id);
         model.addAttribute("user", user);
-        return "user-edit";  // 사용자 정보를 수정하는 폼 뷰 (예: user-edit.html)
+        return "userEdit";  // 사용자 정보를 수정하는 폼 뷰 (예: user-edit.html)
     }
 
     @PostMapping("/update/{id}")
@@ -55,13 +55,20 @@ public class UserController {
         updateUser.setEmail(user.getEmail());
         updateUser.setNickName(user.getNickName());
         updateUser.setPhoneNumber(user.getPhoneNumber());
+
+        // 비밀번호 업데이트 로직 추가 (비밀번호 변경이 가능한 경우)
+        if (!user.getPassword().isEmpty()) {
+            updateUser.setPassword(user.getPassword());
+            // 비밀번호 해싱 로직을 추가할 수 있습니다.
+        }
+
         userService.addUser(updateUser);
-        return "redirect:/user/find/" + id;  // 수정된 사용자 세부 정보 페이지로 리다이렉트
+        return "redirect:/find/" + id;
     }
 
     @PostMapping("/delete/{id}")
     public String deleteUser(@PathVariable("id") Long id, Model model) {
         userService.delete(id);
-        return "redirect:/user/find/all";  // 삭제 후 사용자 리스트 페이지로 리다이렉트
+        return "redirect:/find/all";  // 삭제 후 사용자 리스트 페이지로 리다이렉트
     }
 }

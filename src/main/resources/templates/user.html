@@ -7,7 +7,17 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h2>User List</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>User List</h2>
+        <div class="d-flex">
+            <form th:action="@{/user/find}" method="get" class="d-flex">
+                <input type="text" name="id" class="form-control me-2" placeholder="Search by ID">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+            </form>
+            <a th:href="@{/user/add}" class="btn btn-primary ms-3">Sign Up</a>
+        </div>
+    </div>
+
     <table class="table table-bordered">
         <thead>
         <tr>
@@ -24,7 +34,6 @@
             <td th:text="${user.email}"></td>
             <td th:text="${user.nickName}"></td>
             <td th:text="${user.phoneNumber}"></td>
-            <td th:text="${#dates.format(user.localDateTime, 'yyyy.MM.dd/HH:mm/E')}"></td>
         </tr>
         </tbody>
     </table>
