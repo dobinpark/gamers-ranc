@@ -12,7 +12,10 @@
 #        format_sql: true
 #    show-sql: true
 
+server:
+  port: 80
+
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/games
+      uri: mongodb+srv://ff09560810:ddgh93081%29@cluster93.j2jujof.mongodb.net/games?retryWrites=true&w=majority&authSource=admin
