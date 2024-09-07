@@ -18,4 +18,4 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://ff09560810:ddgh93081%29@cluster93.j2jujof.mongodb.net/games?retryWrites=true&w=majority&authSource=admin
+      uri: mongodb+srv://ff5026:ddgh0919@cluster.zjsb2.mongodb.net/games
