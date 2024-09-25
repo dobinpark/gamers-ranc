@@ -1,34 +1,22 @@
 package jp.games_ranc.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.time.LocalDateTime;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Document
+@Entity
+@Table(name = "user")
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Field
-    private String email;
-    @Field
+
+    private String username;
+
     private String password;
-    @Field
-    private String nickName;
-    @Field
-    private String phoneNumber;
-    @Field
-    @JsonFormat(pattern = "yyyy.MM.dd/HH:mm/E")
-    private LocalDateTime localDateTime;
+
+    private String role;
 }
+
+
