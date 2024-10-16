@@ -3,9 +3,9 @@ package jp.games_ranc.DTO;
 import lombok.Data;
 
 @Data
-public class JoinDTO {
+public class LoginRequestDto {
 
-    private String userName;
+    private String username;
 
     private String password;
 }

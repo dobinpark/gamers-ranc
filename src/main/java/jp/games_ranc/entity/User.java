@@ -1,11 +1,17 @@
 package jp.games_ranc.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "user")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -16,7 +22,11 @@ public class User {
 
     private String password;
 
-    private String role;
+    private String secondaryPassword;
+
+    private String nickname;
+
+    private String phoneNumber;
 }
 
 
