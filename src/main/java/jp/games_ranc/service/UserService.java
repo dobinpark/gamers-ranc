@@ -1,33 +1,31 @@
 package jp.games_ranc.service;
 
+import jp.games_ranc.DTO.LoginRequestDto;
 import jp.games_ranc.DTO.SignupRequestDto;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .map(user -> new org.springframework.security.core.userdetails.User(
-                        user.getUsername(),
-                        user.getPassword(),
-                        new ArrayList<>()
-                ))
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+    public boolean login(LoginRequestDto loginRequestDto) {
+        Optional<User> optionalUser = userRepository.findByUsername(loginRequestDto.getUsername());
+
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            return passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword());
+        }
+        return false;
     }
 
     public void signup(SignupRequestDto requestDto) {
@@ -38,6 +36,32 @@ public class UserService implements UserDetailsService {
                 .nickname(requestDto.getNickname())
                 .phoneNumber(requestDto.getPhoneNumber())
                 .build();
+
         userRepository.save(user);
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User updateUser(Long id, LoginRequestDto signupRequestDto) {
+        User user = getUserById(id);
+        user.setUsername(signupRequestDto.getUsername());
+        user.setPassword(passwordEncoder.encode(signupRequestDto.getPassword()));
+        user.setSecondaryPassword(passwordEncoder.encode(signupRequestDto.getSecondaryPassword()));
+        user.setNickname(signupRequestDto.getNickname());
+        user.setPhoneNumber(signupRequestDto.getPhoneNumber());
+
+        return userRepository.save(user);
+    }
+
+    public void deleteUser(Long id) {
+        User user = getUserById(id);
+        userRepository.delete(user);
     }
 }
