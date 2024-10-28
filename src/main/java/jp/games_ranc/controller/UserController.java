@@ -1,7 +1,6 @@
 package jp.games_ranc.controller;
 
-import jp.games_ranc.DTO.LoginRequestDto;
-import jp.games_ranc.DTO.SignupRequestDto;
+import jp.games_ranc.DTO.UserDto;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +17,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignupRequestDto requestDto) {
-        userService.signup(requestDto);
+    public ResponseEntity<String> signup(@RequestBody UserDto userDto) {
+        userService.signup(userDto);
         return ResponseEntity.ok("회원가입 성공");
     }
 
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDto requestDto) {
+    public ResponseEntity<String> login(@RequestBody UserDto requestDto) {
         return ResponseEntity.ok("로그인 성공!");
     }
 
@@ -41,8 +40,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody LoginRequestDto loginRequestDto) {
-        User updatedUser = userService.updateUser(id, loginRequestDto);
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+        User updatedUser = userService.updateUser(id, userDto);
         return ResponseEntity.ok(updatedUser);
     }
 

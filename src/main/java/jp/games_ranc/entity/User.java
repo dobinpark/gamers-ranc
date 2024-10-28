@@ -19,7 +19,10 @@ public class User {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String email;
+
+    @Column(nullable = false)
+    private String nickname;
 
     @Column(nullable = false)
     private String password;
@@ -28,10 +31,5 @@ public class User {
     private String secondaryPassword;
 
     @Column(nullable = false)
-    private String nickname;
-
-    @Column(nullable = false)
     private String phoneNumber;
 }
-
-

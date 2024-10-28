@@ -1,7 +1,6 @@
 package jp.games_ranc.service;
 
-import jp.games_ranc.DTO.LoginRequestDto;
-import jp.games_ranc.DTO.SignupRequestDto;
+import jp.games_ranc.DTO.UserDto;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,23 +17,24 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public boolean login(LoginRequestDto loginRequestDto) {
-        Optional<User> optionalUser = userRepository.findByUsername(loginRequestDto.getUsername());
+    public User login(String email, String password) {
 
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            return passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword());
+        User user = userRepository.findByEmail(email);
+
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
         }
-        return false;
+
+        return null;
     }
 
-    public void signup(SignupRequestDto requestDto) {
+    public void signup(UserDto userDto) {
         User user = User.builder()
-                .username(requestDto.getUsername())
-                .password(passwordEncoder.encode(requestDto.getPassword()))
-                .secondaryPassword(passwordEncoder.encode(requestDto.getSecondaryPassword()))
-                .nickname(requestDto.getNickname())
-                .phoneNumber(requestDto.getPhoneNumber())
+                .email(userDto.getEmail())
+                .password(passwordEncoder.encode(userDto.getPassword()))
+                .secondaryPassword(passwordEncoder.encode(userDto.getSecondaryPassword()))
+                .nickname(userDto.getNickname())
+                .phoneNumber(userDto.getPhoneNumber())
                 .build();
 
         userRepository.save(user);
@@ -49,13 +49,13 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User updateUser(Long id, LoginRequestDto signupRequestDto) {
+    public User updateUser(Long id, UserDto userDto) {
         User user = getUserById(id);
-        user.setUsername(signupRequestDto.getUsername());
-        user.setPassword(passwordEncoder.encode(signupRequestDto.getPassword()));
-        user.setSecondaryPassword(passwordEncoder.encode(signupRequestDto.getSecondaryPassword()));
-        user.setNickname(signupRequestDto.getNickname());
-        user.setPhoneNumber(signupRequestDto.getPhoneNumber());
+        user.setEmail(userDto.getEmail());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setSecondaryPassword(passwordEncoder.encode(userDto.getSecondaryPassword()));
+        user.setNickname(userDto.getNickname());
+        user.setPhoneNumber(userDto.getPhoneNumber());
 
         return userRepository.save(user);
     }
