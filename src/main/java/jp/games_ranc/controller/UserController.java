@@ -4,6 +4,7 @@ import jp.games_ranc.DTO.UserDto;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +23,17 @@ public class UserController {
         return ResponseEntity.ok("회원가입 성공");
     }
 
-    @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody UserDto requestDto) {
-        return ResponseEntity.ok("로그인 성공!");
-    }
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody UserDto userDto) {
+        try {
+            userService.login(userDto.getEmail(), userDto.getPassword());
+            return ResponseEntity.ok("로그인 성공!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패: " + e.getMessage());
+        }
+}
 
-    @GetMapping("/{id}")
+        @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(user);

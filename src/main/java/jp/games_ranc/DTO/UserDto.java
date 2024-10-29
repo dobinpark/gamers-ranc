@@ -1,6 +1,9 @@
 package jp.games_ranc.DTO;
 
 import lombok.Data;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.time.LocalDateTime;
 
 @Data
 public class UserDto {
@@ -14,4 +17,8 @@ public class UserDto {
     private String secondaryPassword;
 
     private String phoneNumber;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

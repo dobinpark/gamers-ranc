@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,23 +17,24 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User login(String email, String password) {
+        User user = userRepository.findByEmail(email)
 
-        User user = userRepository.findByEmail(email);
-
-        if (user != null && user.getPassword().equals(password)) {
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (passwordEncoder.matches(password, user.getPassword())) {
             return user;
         }
 
-        return null;
+        throw new RuntimeException("Invalid credentials");
     }
 
     public void signup(UserDto userDto) {
         User user = User.builder()
                 .email(userDto.getEmail())
+                .nickname(userDto.getNickname())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .secondaryPassword(passwordEncoder.encode(userDto.getSecondaryPassword()))
-                .nickname(userDto.getNickname())
                 .phoneNumber(userDto.getPhoneNumber())
+                .createdAt(userDto.getCreatedAt())
                 .build();
 
         userRepository.save(user);
@@ -56,6 +56,7 @@ public class UserService {
         user.setSecondaryPassword(passwordEncoder.encode(userDto.getSecondaryPassword()));
         user.setNickname(userDto.getNickname());
         user.setPhoneNumber(userDto.getPhoneNumber());
+        user.setUpdatedAt(userDto.getUpdatedAt());
 
         return userRepository.save(user);
     }

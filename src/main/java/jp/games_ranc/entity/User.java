@@ -1,35 +1,43 @@
 package jp.games_ranc.entity;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.time.LocalDateTime;
 
 @Data
-@Entity
-@Table(name = "user")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(collation = "user")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Field
     private String email;
 
-    @Column(nullable = false)
+    @Field
     private String nickname;
 
-    @Column(nullable = false)
+    @Field
     private String password;
 
-    @Column(nullable = false)
+    @Field
     private String secondaryPassword;
 
-    @Column(nullable = false)
+    @Field
     private String phoneNumber;
+
+    @Field
+    private LocalDateTime createdAt;
+
+    @Field
+    private LocalDateTime updatedAt;
 }
