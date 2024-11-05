@@ -1,9 +1,16 @@
 spring:
-  data:
-    mongodb:
-      uri: mongodb+srv://ff09560810:ddgh93081)@cluster93.j2jujof.mongodb.net/gamers
-  main:
-    allow-bean-definition-overriding: true
-
-server:
-  port: 8080
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+  h2:
+    console:
+      enabled: true
+jwt:
+  issuer: ff09560810@gmail.com
+  secret_key: gamers-ranc
