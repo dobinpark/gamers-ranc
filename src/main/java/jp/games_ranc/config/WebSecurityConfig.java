@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.config;
 
 import jp.games_ranc.service.UserDetailService;
@@ -25,10 +26,12 @@ public class WebSecurityConfig {
     private final UserDetailService userService;
 
     // 스프링 시큐리티 기능 비활성화
-    /*
+    */
+/*
     스프링 시큐리티의 모든 기능을 사용하지 않게 설정하는 코드
     일반적으로 정적 리소스(이미지, HTML 파일)에 설정
-     */
+     *//*
+
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
@@ -75,3 +78,4 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+*/
