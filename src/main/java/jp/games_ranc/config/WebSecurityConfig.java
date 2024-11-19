@@ -50,13 +50,15 @@ public class WebSecurityConfig {
                                 new AntPathRequestMatcher("/user")
                         ).permitAll()
                         .anyRequest().authenticated())
+                        // anyRequest() : 위에서 설정한 url 이외의 요청에 대해 설정
+                        // authenticated() : 별도의 인가는 필요하지 않지만 인증이 성공된 상태여야 접근 가능
                 .formLogin(formLogin -> formLogin
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/articles")
+                        .loginPage("/login") // 로그인 페이지 경로 설정
+                        .defaultSuccessUrl("/articles") // 로그인이 완료되었을 때 이동할 경로 설정
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/login")
-                        .invalidateHttpSession(true)
+                        .logoutSuccessUrl("/login") // 로그아웃이 완료되었을 때 이동할 경로 설정
+                        .invalidateHttpSession(true) // 로그아웃 이후에 세션을 전체 삭제할지 여부 설정
                 )
                 .csrf(AbstractHttpConfigurer::disable) // csrf 비활성화, 실무에서는 적용해야 함.
                 .build();
