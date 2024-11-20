@@ -16,7 +16,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Controller
 public class BlogViewController {
+
     private final BlogService blogService;
+
     @GetMapping("/articles")
     public String getArticles(Model model) {
         List<ArticleListViewResponse> articles = blogService.findAll().stream()
