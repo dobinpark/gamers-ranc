@@ -1,7 +1,6 @@
 package jp.games_ranc.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jp.games_ranc.DTO.CreateAccessTokenRequest;
 import jp.games_ranc.config.jwt.JwtFactory;
 import jp.games_ranc.config.jwt.JwtProperties;
@@ -9,7 +8,6 @@ import jp.games_ranc.entity.RefreshToken;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.repository.RefreshTokenRepository;
 import jp.games_ranc.repository.UserRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,16 +25,16 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 @SpringBootTest
 @AutoConfigureMockMvc
-public class TokenApiControllerTest {
-
-    User user;
+class TokenApiControllerTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -56,6 +54,8 @@ public class TokenApiControllerTest {
     @Autowired
     RefreshTokenRepository refreshTokenRepository;
 
+    User user;
+
     @BeforeEach
     public void mockMvcSetUp() {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
@@ -64,10 +64,10 @@ public class TokenApiControllerTest {
     }
 
     @BeforeEach
-    void serSecurityContext() {
+    void setSecurityContext() {
         userRepository.deleteAll();
         user = userRepository.save(User.builder()
-                .email("user@gamil.com")
+                .email("user@gmail.com")
                 .password("test")
                 .build());
 
@@ -81,17 +81,9 @@ public class TokenApiControllerTest {
         // given
         final String url = "/api/token";
 
-        User testUser = userRepository.save(User.builder()
-                .email("user@gmail.com")
-                .password("test")
-                .build());
+        String refreshToken = createRefreshToken();
 
-        String refreshToken = JwtFactory.builder()
-                .claims(Map.of("id", testUser.getId()))
-                .build()
-                .createToken(jwtProperties);
-
-        refreshTokenRepository.save(new RefreshToken(testUser.getId(), refreshToken));
+        refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken));
 
         CreateAccessTokenRequest request = new CreateAccessTokenRequest();
         request.setRefreshToken(refreshToken);
@@ -108,7 +100,7 @@ public class TokenApiControllerTest {
                 .andExpect(jsonPath("$.accessToken").isNotEmpty());
     }
 
-    @DisplayName("deleteRefreshToken : 리프레시 토큰을 삭제한다.")
+    @DisplayName("deleteRefreshToken: 리프레시 토큰을 삭제한다.")
     @Test
     public void deleteRefreshToken() throws Exception {
         // given
@@ -126,10 +118,12 @@ public class TokenApiControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE));
 
         // then
-        resultActions.andExpect(status().isOk());
+        resultActions
+                .andExpect(status().isOk());
 
-        Assertions.assertThat(refreshTokenRepository.findByRefreshToken(refreshToken)).isEmpty();
+        assertThat(refreshTokenRepository.findByRefreshToken(refreshToken)).isEmpty();
     }
+
 
     private String createRefreshToken() {
         return JwtFactory.builder()
@@ -137,4 +131,5 @@ public class TokenApiControllerTest {
                 .build()
                 .createToken(jwtProperties);
     }
+
 }
