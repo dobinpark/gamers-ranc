@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.config;
 
 import jp.games_ranc.config.jwt.TokenProvider;
@@ -100,4 +101,4 @@ public class WebOAuthSecurityConfig {
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
-}
+}*/

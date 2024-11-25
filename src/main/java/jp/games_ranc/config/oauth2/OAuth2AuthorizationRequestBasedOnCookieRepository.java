@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.config.oauth2;
 
 import jakarta.servlet.http.Cookie;
@@ -41,4 +42,4 @@ public class OAuth2AuthorizationRequestBasedOnCookieRepository
     public void removeAuthorizationRequestCookies(HttpServletRequest request, HttpServletResponse response) {
         CookieUtil.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
     }
-}
+}*/

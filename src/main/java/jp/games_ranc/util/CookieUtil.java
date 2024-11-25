@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.util;
 
 import jakarta.servlet.http.Cookie;
@@ -49,4 +50,4 @@ public class CookieUtil {
                 )
         );
     }
-}
+}*/

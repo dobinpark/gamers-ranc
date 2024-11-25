@@ -22,15 +22,19 @@
 				<div class = "mb-2">
 					<form th:action="@{/user}" method="POST">
 						<div class="mb-3">
-							<label class="form-label text-white">Email address</label>
+							<label class="form-label text-white">이메일</label>
 							<input type="email" class="form-control" name="email">
 						</div>
 						<div class="mb-3">
-							<label class="form-label text-white">Password</label>
+							<label class="form-label text-white">닉네임</label>
+							<input type="nickname" class="form-control" name="nickname">
+						</div>
+						<div class="mb-3">
+							<label class="form-label text-white">패스워드</label>
 							<input type="password" class="form-control" name="password">
 						</div>
 						
-						<button type="submit" class="btn btn-primary">Submit</button>
+						<button type="submit" class="btn btn-primary">회원가입</button>
 					</form>
 				</div>
 			</div>

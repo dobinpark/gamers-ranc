@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.config.oauth2;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -83,4 +84,4 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build()
                 .toUriString();
     }
-}
+}*/

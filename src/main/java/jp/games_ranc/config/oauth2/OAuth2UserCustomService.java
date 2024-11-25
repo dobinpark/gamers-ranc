@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.config.oauth2;
 
 import jp.games_ranc.entity.User;
@@ -42,4 +43,4 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
 
         return userRepository.save(user);
     }
-}
+}*/

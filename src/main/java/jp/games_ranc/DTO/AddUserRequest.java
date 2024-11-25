@@ -9,5 +9,7 @@ public class AddUserRequest {
 
     private String email;
 
+    private String nickname;
+
     private String password;
 }
