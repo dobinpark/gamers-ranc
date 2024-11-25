@@ -1,4 +1,4 @@
-package jp.games_ranc.DTO;
+package jp.games_ranc.DTO.article;
 
 import jp.games_ranc.entity.Article;
 import lombok.AllArgsConstructor;

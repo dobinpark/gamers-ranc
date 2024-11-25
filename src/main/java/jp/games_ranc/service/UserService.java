@@ -1,7 +1,7 @@
 package jp.games_ranc.service;
 
-import jp.games_ranc.DTO.AddUserRequest;
-import jp.games_ranc.DTO.CreateAccessTokenResponse;
+import jp.games_ranc.DTO.user.AddUserRequest;
+import jp.games_ranc.DTO.user.CreateAccessTokenResponse;
 import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.entity.RefreshToken;
 import jp.games_ranc.entity.User;

@@ -1,8 +1,8 @@
 package jp.games_ranc.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jp.games_ranc.DTO.AddArticleRequest;
-import jp.games_ranc.DTO.UpdateArticleRequest;
+import jp.games_ranc.DTO.article.AddArticleRequest;
+import jp.games_ranc.DTO.article.UpdateArticleRequest;
 import jp.games_ranc.entity.Article;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.repository.BlogRepository;

@@ -1,16 +1,19 @@
-package jp.games_ranc.DTO;
+package jp.games_ranc.DTO.article;
 
 import jp.games_ranc.entity.Article;
 import lombok.Getter;
 
 @Getter
-public class ArticleResponse {
+public class ArticleListViewResponse {
+
+    private final Long id;
 
     private final String title;
 
     private final String content;
 
-    public ArticleResponse(Article article) {
+    public ArticleListViewResponse(Article article) {
+        this.id = article.getId();
         this.title = article.getTitle();
         this.content = article.getContent();
     }

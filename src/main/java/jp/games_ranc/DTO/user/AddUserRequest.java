@@ -1,4 +1,4 @@
-package jp.games_ranc.DTO;
+package jp.games_ranc.DTO.user;
 
 import lombok.Getter;
 import lombok.Setter;

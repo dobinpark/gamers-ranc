@@ -1,7 +1,7 @@
-package jp.games_ranc.controller;
+package jp.games_ranc.controller.blog;
 
-import jp.games_ranc.DTO.ArticleListViewResponse;
-import jp.games_ranc.DTO.ArticleViewResponse;
+import jp.games_ranc.DTO.article.ArticleListViewResponse;
+import jp.games_ranc.DTO.article.ArticleViewResponse;
 import jp.games_ranc.entity.Article;
 import jp.games_ranc.service.BlogService;
 import lombok.RequiredArgsConstructor;

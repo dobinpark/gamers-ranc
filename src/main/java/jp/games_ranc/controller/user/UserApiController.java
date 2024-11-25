@@ -1,8 +1,8 @@
-package jp.games_ranc.controller;
+package jp.games_ranc.controller.user;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jp.games_ranc.DTO.AddUserRequest;
+import jp.games_ranc.DTO.user.AddUserRequest;
 import jp.games_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;

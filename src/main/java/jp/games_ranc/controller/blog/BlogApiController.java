@@ -1,8 +1,8 @@
-package jp.games_ranc.controller;
+package jp.games_ranc.controller.blog;
 
-import jp.games_ranc.DTO.AddArticleRequest;
-import jp.games_ranc.DTO.ArticleResponse;
-import jp.games_ranc.DTO.UpdateArticleRequest;
+import jp.games_ranc.DTO.article.AddArticleRequest;
+import jp.games_ranc.DTO.article.ArticleResponse;
+import jp.games_ranc.DTO.article.UpdateArticleRequest;
 import jp.games_ranc.entity.Article;
 import jp.games_ranc.service.BlogService;
 import lombok.RequiredArgsConstructor;

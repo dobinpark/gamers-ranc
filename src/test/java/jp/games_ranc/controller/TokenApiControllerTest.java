@@ -1,7 +1,7 @@
 package jp.games_ranc.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jp.games_ranc.DTO.CreateAccessTokenRequest;
+import jp.games_ranc.DTO.user.CreateAccessTokenRequest;
 import jp.games_ranc.config.jwt.JwtFactory;
 import jp.games_ranc.config.jwt.JwtProperties;
 import jp.games_ranc.entity.RefreshToken;
