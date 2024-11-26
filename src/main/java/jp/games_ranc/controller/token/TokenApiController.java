@@ -1,7 +1,7 @@
 package jp.games_ranc.controller.token;
 
-import jp.games_ranc.DTO.user.CreateAccessTokenRequest;
-import jp.games_ranc.DTO.user.CreateAccessTokenResponse;
+import jp.games_ranc.DTO.token.CreateAccessTokenRequest;
+import jp.games_ranc.DTO.token.CreateAccessTokenResponse;
 import jp.games_ranc.service.RefreshTokenService;
 import jp.games_ranc.service.TokenService;
 import lombok.RequiredArgsConstructor;

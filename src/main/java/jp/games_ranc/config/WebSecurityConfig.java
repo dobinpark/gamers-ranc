@@ -11,8 +11,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
@@ -42,22 +44,39 @@ public class WebSecurityConfig {
         return http
                 .authorizeRequests(auth -> auth // 인증, 인가 설정
                         .requestMatchers(
+                                new AntPathRequestMatcher("/api/login"),
+                                new AntPathRequestMatcher("/api/signup"),
                                 new AntPathRequestMatcher("/login"),
                                 new AntPathRequestMatcher("/signup"),
                                 new AntPathRequestMatcher("/user")
+
                         ).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated()
                         .anyRequest().authenticated())
                         // anyRequest() : 위에서 설정한 url 이외의 요청에 대해 설정
                         // authenticated() : 별도의 인가는 필요하지 않지만 인증이 성공된 상태여야 접근 가능
                 .formLogin(formLogin -> formLogin
                         .loginPage("/login") // 로그인 페이지 경로 설정
-                        .defaultSuccessUrl("/articles") // 로그인이 완료되었을 때 이동할 경로 설정
+                        .defaultSuccessUrl("/articles", true) // 로그인이 완료되었을 때 이동할 경로 설정
+                        .failureUrl("/login?error=true") // 로그인 실패시 처리
+                        .permitAll()
                 )
                 .logout(logout -> logout
+                        .logoutUrl("/api/logout")
                         .logoutSuccessUrl("/login") // 로그아웃이 완료되었을 때 이동할 경로 설정
+                        .deleteCookies("JSESSIONID", "accessToken", "refreshToken") // 세션 쿠키 삭제
+                        .clearAuthentication(true) // 인증 정보 삭제
                         .invalidateHttpSession(true) // 로그아웃 이후에 세션을 전체 삭제할지 여부 설정
                 )
-                .csrf(AbstractHttpConfigurer::disable) // csrf 비활성화, 실무에서는 적용해야 함.
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(1) // 통신 세션 제한
+                        .maxSessionsPreventsLogin(true) // 새 로그인 차단
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**")
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                )
                 .build();
     }
 
