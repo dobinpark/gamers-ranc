@@ -26,7 +26,7 @@
     * 포인트는 사용할 수 있으며, 포인트를 현금화할 수 있음
 
 # 🛠 Software Architecture
-![Gamer's RanC 아키텍처 구조](https://github.com/dobinpark/iHealMe/assets/53501690/e7d2a530-5b55-49bf-baab-1db3410be1e9)
+(![아키텍처 구조](https://github.com/user-attachments/assets/3fa6d556-4d44-4413-9d0b-58cd665b7ae1))
 
 # 🧑🏻‍💻 Team
 Back-End Developer : 1명<br>
