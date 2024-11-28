@@ -1,4 +1,4 @@
-<img width="100%" src="https://github.com/dobinpark/iHealMe/assets/53501690/f167dcb7-e629-40cc-b205-cc11b547013a"/>
+<img width="100%" src="https://github.com/user-attachments/assets/bfb4a309-f49f-41c0-a23b-ea85297cd339"/>
 
 # Gamer's RanC
 
