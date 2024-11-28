@@ -26,7 +26,7 @@
     * 포인트는 사용할 수 있으며, 포인트를 현금화할 수 있음
 
 # 🛠 Software Architecture
-(![아키텍처 구조](https://github.com/user-attachments/assets/3fa6d556-4d44-4413-9d0b-58cd665b7ae1))
+![아키텍처 구조](https://github.com/user-attachments/assets/3fa6d556-4d44-4413-9d0b-58cd665b7ae1)
 
 # 🧑🏻‍💻 Team
 Back-End Developer : 1명<br>
