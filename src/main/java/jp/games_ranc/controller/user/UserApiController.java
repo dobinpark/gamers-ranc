@@ -11,10 +11,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Duration;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api")
@@ -25,11 +24,16 @@ public class UserApiController {
 
     @PostMapping("/signup")
     public ResponseEntity<TokenResponse> signup(@RequestBody AddUserRequest request, HttpServletResponse response) {
-        TokenResponse tokenResponse = userService.save(request, response);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
-                .body(tokenResponse);
+        try {
+            TokenResponse tokenResponse = userService.save(request, response);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
+                    .header("X-Content-Type-Options", "nosniff")
+                    .header("X-Frame-Options", "DENY")
+                    .body(tokenResponse);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "회원가입 처리 중 오류가 발생했습니다.", e);
+        }
     }
 
     @PostMapping("/logout")
@@ -45,11 +49,11 @@ public class UserApiController {
     }
 
     private void deleteCookie(HttpServletResponse response, String name) {
-        Cookie cookie = new Cookie(name, "");  // null 대신 빈 문자열 사용
+        Cookie cookie = new Cookie(name, "");
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setHttpOnly(true);  // XSS 방지
-        cookie.setSecure(true);    // HTTPS 전용
+        cookie.setHttpOnly(true); // XSS 방지
+        cookie.setSecure(true); // HTTPS 전용
         response.addCookie(cookie);
     }
 }

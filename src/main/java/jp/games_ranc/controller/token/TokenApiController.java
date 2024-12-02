@@ -27,8 +27,8 @@ public class TokenApiController {
                 .body(new CreateAccessTokenResponse(newAccessToken));
     }
 
-    @DeleteMapping("/api/refresh-token")
-    public ResponseEntity deleteRefreshToken() {
+    @DeleteMapping("/api/refresh-token") 
+    public ResponseEntity<Void> deleteRefreshToken() { // ResponseEntity의 타입 파라미터 명시
         refreshTokenService.delete();
 
         return ResponseEntity.ok()
