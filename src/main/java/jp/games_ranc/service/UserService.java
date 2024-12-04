@@ -6,6 +6,7 @@ import jp.games_ranc.DTO.token.TokenResponse;
 import jp.games_ranc.DTO.user.AddUserRequest;
 import jp.games_ranc.DTO.token.CreateAccessTokenResponse;
 import jp.games_ranc.DTO.user.LoginRequest;
+import jp.games_ranc.blockchain.service.BlockchainService;
 import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.entity.RefreshToken;
 import jp.games_ranc.entity.User;
@@ -29,6 +30,7 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final BlockchainService blockchainService;
 
     @Transactional
     public TokenResponse signup(AddUserRequest request) {
