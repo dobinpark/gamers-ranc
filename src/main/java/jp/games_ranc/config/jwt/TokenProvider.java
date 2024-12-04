@@ -9,15 +9,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
-@RequiredArgsConstructor
-@Service
+@Component
 public class TokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
@@ -25,6 +24,10 @@ public class TokenProvider {
     private static final String ID_KEY = "id";
 
     private final JwtProperties jwtProperties;
+
+    public TokenProvider(JwtProperties jwtProperties) {
+        this.jwtProperties = jwtProperties;
+    }
 
     public String generateToken(User user, Duration expiredAt) {
         if (user == null) {

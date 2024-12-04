@@ -6,6 +6,8 @@ import jp.games_ranc.DTO.article.UpdateArticleRequest;
 import jp.games_ranc.entity.Article;
 import jp.games_ranc.service.BlogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +17,12 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/api")
 public class BlogApiController {
 
     private final BlogService blogService;
 
-    @PostMapping("/api/articles")
+    @PostMapping("/articles")
     public ResponseEntity<Article> addArticle(@RequestBody AddArticleRequest request, Principal principal) {
         Article savedArticle = blogService.save(request, principal.getName());
 
@@ -27,33 +30,42 @@ public class BlogApiController {
                 .body(savedArticle);
     }
 
-    @GetMapping("/api/articles")
-    public ResponseEntity<List<ArticleResponse>> findAllArticles() {
-        List<ArticleResponse> articles = blogService.findAll()
+    @GetMapping("/articles")
+    public ResponseEntity<List<ArticleResponse>> findAllArticles(Pageable pageable) {
+        Page<Article> articlePage = blogService.findAll(pageable);
+        List<ArticleResponse> articles = articlePage.getContent()
                 .stream()
                 .map(ArticleResponse::new)
                 .toList();
-        return ResponseEntity.ok()
-                .body(articles);
+        return ResponseEntity.ok().body(articles);
     }
 
-    @GetMapping("/api/articles/{id}")
+    @GetMapping("/articles/{id}")
     public ResponseEntity<ArticleResponse> findArticle(@PathVariable long id) {
         Article article = blogService.findById(id);
         return ResponseEntity.ok()
                 .body(new ArticleResponse(article));
     }
 
-    @DeleteMapping("/api/articles/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable long id) {
+    @DeleteMapping("/articles/{id}")
+    public ResponseEntity<Void> deleteArticle(@PathVariable long id, Principal principal) {
+        Article article = blogService.findById(id);
+        if (!article.getAuthor().equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         blogService.delete(id);
         return ResponseEntity.ok()
                 .build();
     }
 
-    @PutMapping("/api/articles/{id}")
+    @PutMapping("/articles/{id}")
     public ResponseEntity<Article> updateArticle(@PathVariable long id,
-                                                 @RequestBody UpdateArticleRequest request) {
+                                                 @RequestBody UpdateArticleRequest request,
+                                                 Principal principal) {
+        Article article = blogService.findById(id);
+        if (!article.getAuthor().equals(principal.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         Article updatedArticle = blogService.update(id, request);
         return ResponseEntity.ok()
                 .body(updatedArticle);

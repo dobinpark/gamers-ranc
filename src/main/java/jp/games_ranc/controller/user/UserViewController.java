@@ -15,9 +15,4 @@ public class UserViewController {
     public String signup() {
         return "signup";
     }
-
-    @GetMapping("/articles")
-    public String articles() {
-        return "articles";
-    }
 }

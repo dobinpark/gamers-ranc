@@ -5,28 +5,31 @@ import jp.games_ranc.DTO.article.ArticleViewResponse;
 import jp.games_ranc.entity.Article;
 import jp.games_ranc.service.BlogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Controller
+@RequestMapping("/blog")
+@RequiredArgsConstructor
 public class BlogViewController {
 
     private final BlogService blogService;
 
     @GetMapping("/articles")
-    public String getArticles(Model model) {
-        List<ArticleListViewResponse> articles = blogService.findAll().stream()
-                .map(ArticleListViewResponse::new)
-                .toList();
-
+    public String getArticles(Model model, @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<ArticleListViewResponse> articles = blogService.findAll(pageable)
+                .map(ArticleListViewResponse::new);
         model.addAttribute("articles", articles);
-
         return "articleList";
     }
 

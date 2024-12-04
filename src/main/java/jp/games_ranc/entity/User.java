@@ -1,6 +1,8 @@
 package jp.games_ranc.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,13 +25,16 @@ public class User implements UserDetails {
     @Column(name = "user_id", updatable = false)
     private Long id;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Email(message = "올바른 이메일 형식이어야 합니다")
     private String email;
 
-    @Column(name = "nickname", unique = true)
+    @Column(name = "nickname", unique = true, length = 50)
+    @Size(min = 2, max = 50, message = "닉네임은 2자에서 50자 사이여야 합니다")
     private String nickname;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
+    @Size(min = 8, message = "비밀번호는 최소 8자 이상이어야 합니다")
     private String password;
 
     @CreatedDate

@@ -3,8 +3,10 @@ package jp.games_ranc.controller.user;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jp.games_ranc.DTO.token.TokenResponse;
 import jp.games_ranc.DTO.user.AddUserRequest;
+import jp.games_ranc.DTO.user.LoginRequest;
 import jp.games_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -12,28 +14,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserApiController {
 
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<TokenResponse> signup(@RequestBody AddUserRequest request, HttpServletResponse response) {
-        try {
-            TokenResponse tokenResponse = userService.save(request, response);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
-                    .header("X-Content-Type-Options", "nosniff")
-                    .header("X-Frame-Options", "DENY")
-                    .body(tokenResponse);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "회원가입 처리 중 오류가 발생했습니다.", e);
-        }
+    public ResponseEntity<TokenResponse> signup(@RequestBody @Valid AddUserRequest request) {
+        TokenResponse tokenResponse = userService.signup(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
+                .body(tokenResponse);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponse> login(@RequestBody @Valid LoginRequest request) {
+        TokenResponse tokenResponse = userService.login(request);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenResponse.getAccessToken())
+                .body(tokenResponse);
     }
 
     @PostMapping("/logout")

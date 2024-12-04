@@ -5,9 +5,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import jp.games_ranc.DTO.token.TokenResponse;
 import jp.games_ranc.DTO.user.AddUserRequest;
 import jp.games_ranc.DTO.token.CreateAccessTokenResponse;
+import jp.games_ranc.DTO.user.LoginRequest;
 import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.entity.RefreshToken;
 import jp.games_ranc.entity.User;
+import jp.games_ranc.exception.CustomException;
+import jp.games_ranc.exception.ErrorCode;
 import jp.games_ranc.repository.RefreshTokenRepository;
 import jp.games_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService {
 
@@ -27,28 +31,42 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
-    public TokenResponse save(AddUserRequest dto, HttpServletResponse response) {
-        // 유저 생성및 저장
-        User user = User.builder()
-                .email(dto.getEmail())
-                .nickname(dto.getNickname())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .build();
-        userRepository.save(user);
+    public TokenResponse signup(AddUserRequest request) {
+        validateDuplicateUser(request.getEmail());
+        User user = saveUser(request);
+        return createTokenResponse(user);
+    }
 
-        // 엑세스 토큰 및 리프레시 토큰 생성
-        String accessToken = tokenProvider.generateToken(user, Duration.ofHours(2)); // 엑세스 토큰이 2시간동안 유효
-        String refreshToken = tokenProvider.generateToken(user, Duration.ofDays(7)); // 리프레시 토큰이 7일동안 유효
+    @Transactional
+    public TokenResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        validatePassword(request.getPassword(), user.getPassword());
+        return createTokenResponse(user);
+    }
 
-        // 리프레시 토큰 저장
+    private void validateDuplicateUser(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+    }
+
+    private User saveUser(AddUserRequest request) {
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        return userRepository.save(User.builder()
+                .email(request.getEmail())
+                .password(encodedPassword)
+                .nickname(request.getNickname())
+                .build());
+    }
+
+    private TokenResponse createTokenResponse(User user) {
+        String accessToken = tokenProvider.generateToken(user, Duration.ofHours(2));
+        String refreshToken = tokenProvider.generateToken(user, Duration.ofDays(7));
+
         RefreshToken refreshTokenEntity = new RefreshToken(user.getId(), refreshToken);
         refreshTokenRepository.save(refreshTokenEntity);
 
-        // 쿠키에 토큰 저장
-        addTokenToCookie(response, "accessToken", accessToken, Duration.ofHours(2));
-        addTokenToCookie(response, "refreshToken", refreshToken, Duration.ofDays(7));
-
-        // 엑세스 토큰 반환
         return new TokenResponse(accessToken, refreshToken);
     }
 
@@ -69,5 +87,11 @@ public class UserService {
         cookie.setHttpOnly(true); // XSS 공격 방지
         cookie.setSecure(true); // HTTPS에서만 전송
         response.addCookie(cookie);
+    }
+
+    private void validatePassword(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
     }
 }

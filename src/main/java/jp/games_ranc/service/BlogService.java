@@ -5,24 +5,26 @@ import jp.games_ranc.DTO.article.UpdateArticleRequest;
 import jp.games_ranc.entity.Article;
 import jp.games_ranc.repository.BlogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class BlogService {
 
     private final BlogRepository blogRepository;
 
-    public Article save(AddArticleRequest request, String userName) {
-        return blogRepository.save(request.toEntity(userName));
+    @Transactional
+    public Article save(AddArticleRequest request, String username) {
+        return blogRepository.save(request.toEntity(username));
     }
 
-    public List<Article> findAll() {
-        return blogRepository.findAll();
+    public Page<Article> findAll(Pageable pageable) {
+        return blogRepository.findAll(pageable);
     }
 
     public Article findById(long id) {
@@ -40,12 +42,8 @@ public class BlogService {
 
     @Transactional
     public Article update(long id, UpdateArticleRequest request) {
-        Article article = blogRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
-
-        authorizeArticleAuthor(article);
+        Article article = findById(id);
         article.update(request.getTitle(), request.getContent());
-
         return article;
     }
 

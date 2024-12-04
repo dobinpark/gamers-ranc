@@ -1,5 +1,6 @@
 package jp.games_ranc.config;
 
+import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.service.UserDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,17 +14,22 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-        private final UserDetailService userService;
+        private final UserDetailService userDetailService;
+        private final TokenProvider tokenProvider;
 
         // 스프링 시큐리티 기능 비활성화
         /*
@@ -34,7 +40,7 @@ public class WebSecurityConfig {
         public WebSecurityCustomizer configure() {
                 return (web) -> web.ignoring()
                                 .requestMatchers(toH2Console())
-                                .requestMatchers(new AntPathRequestMatcher("/static/**"));
+                                .requestMatchers("/css/**", "/js/**", "/images/**");
         }
 
         // 특정 HTTP 요청에 대한 웹 기반 보안 구성
@@ -42,24 +48,28 @@ public class WebSecurityConfig {
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 return http
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/api/login", "/api/signup", "/login", "/signup",
-                                                                "/user")
-                                                .permitAll()
-                                                .requestMatchers("/api/**").authenticated()
+                                                .requestMatchers(
+                                                                "/",
+                                                                "/login",
+                                                                "/signup",        // 회원가입 페이지
+                                                                "/api/users/**",  // 회원가입 API
+                                                                "/css/**",
+                                                                "/js/**",
+                                                                "/images/**",
+                                                                "/h2-console/**"
+                                                            ).permitAll()
                                                 .anyRequest().authenticated())
-                                // anyRequest() : 위에서 설정한 url 이외의 요청에 대해 설정
-                                // authenticated() : 별도의 인가는 필요하지 않지만 인증이 성공된 상태여야 접근 가능
+                                .addFilterBefore(tokenAuthenticationFilter(),
+                                                UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
                                 .formLogin(formLogin -> formLogin
                                                 .loginPage("/login") // 로그인 페이지 경로 설정
-                                                .defaultSuccessUrl("/articles", true) // 로그인이 완료되었을 때 이동할 경로 설정
+                                                .defaultSuccessUrl("/blog/articles")  // 로그인 성공 시 블로그 목록으로
                                                 .failureUrl("/login?error=true") // 로그인 실패시 처리
                                                 .permitAll())
                                 .logout(logout -> logout
-                                                .logoutUrl("/api/logout")
                                                 .logoutSuccessUrl("/login") // 로그아웃이 완료되었을 때 이동할 경로 설정
-                                                .deleteCookies("JSESSIONID", "accessToken", "refreshToken") // 세션 쿠키 삭제
-                                                .clearAuthentication(true) // 인증 정보 삭제
                                                 .invalidateHttpSession(true) // 로그아웃 이후에 세션을 전체 삭제할지 여부 설정
+                                                .deleteCookies("JSESSIONID", "accessToken", "refreshToken") // 세션 쿠키 삭제
                                 )
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -67,18 +77,35 @@ public class WebSecurityConfig {
                                                 .maxSessionsPreventsLogin(true) // 새 로그인 차단
                                 )
                                 .csrf(csrf -> csrf
-                                                .ignoringRequestMatchers("/api/**")
-                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                                                .ignoringRequestMatchers("/api/**", "/h2-console/**"))
+                                .headers(headers -> headers
+                                                .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                                                .xssProtection(xss -> xss.disable())
+                                                .contentSecurityPolicy(csp -> csp
+                                                                .policyDirectives("default-src 'self'")))
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .build();
+        }
+
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080")); // 허용할 도메인
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(Arrays.asList("*"));
+                configuration.setAllowCredentials(true);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
         }
 
         // 인증 관리자 관련 설정
         @Bean
-        public AuthenticationManager authenticationManager(HttpSecurity http,
-                        BCryptPasswordEncoder bCryptPasswordEncoder,
-                        UserDetailService userDetailService) throws Exception {
+        public AuthenticationManager authenticationManager(
+                        BCryptPasswordEncoder bCryptPasswordEncoder) {
                 DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-                authProvider.setUserDetailsService(userService);
+                authProvider.setUserDetailsService(userDetailService);
                 authProvider.setPasswordEncoder(bCryptPasswordEncoder);
                 return new ProviderManager(authProvider);
         }
@@ -87,5 +114,11 @@ public class WebSecurityConfig {
         @Bean
         public BCryptPasswordEncoder bCryptPasswordEncoder() {
                 return new BCryptPasswordEncoder();
+        }
+
+        // TokenAuthenticationFilter를 빈으로 등록
+        @Bean
+        public TokenAuthenticationFilter tokenAuthenticationFilter() {
+                return new TokenAuthenticationFilter(tokenProvider);
         }
 }
