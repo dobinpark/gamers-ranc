@@ -54,6 +54,9 @@ dependencies {
     // Web3j 의존성 추가
     implementation 'org.web3j:core:4.9.7'
     implementation 'org.web3j:contracts:4.9.7'
+
+    // Jakarta EE 의존성 추가
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 }
 
 test {
