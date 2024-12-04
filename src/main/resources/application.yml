@@ -1,16 +1,61 @@
 spring:
   jpa:
+    hibernate:
+      ddl-auto: create
+    defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-    defer-datasource-initialization: true
+        dialect: org.hibernate.dialect.H2Dialect
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;MODE=MySQL
     username: sa
+    password:
+    driver-class-name: org.h2.Driver
   h2:
     console:
       enabled: true
+      path: /h2-console
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 326457347367-v...
+            client-secret: GOCSPX-z...
+            scope:
+              - email
+              - profile
+  sql:
+    init:
+      mode: always
+      platform: h2
+  mvc:
+    static-path-pattern: /static/**
+  web:
+    resources:
+      static-locations: classpath:/static/
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+
 jwt:
   issuer: ff09560810@gmail.com
   secret_key: gamers-ranc
+  header: Authorization
+  token-validity-in-seconds: 86400
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+blockchain:
+  network:
+    url: ${BLOCKCHAIN_NETWORK_URL:http://localhost:8545}  # 로컬 Ganache나 테스트넷 URL
+  contract:
+    address: ${BLOCKCHAIN_CONTRACT_ADDRESS}  # 배포된 컨트랙트 주소
+  wallet:
+    private-key: ${BLOCKCHAIN_WALLET_PRIVATE_KEY}  # 관리자 지갑 비밀키
