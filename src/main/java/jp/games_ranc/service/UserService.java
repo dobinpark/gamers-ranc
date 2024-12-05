@@ -2,11 +2,11 @@ package jp.games_ranc.service;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import jp.games_ranc.DTO.token.TokenResponse;
-import jp.games_ranc.DTO.user.AddUserRequest;
-import jp.games_ranc.DTO.token.CreateAccessTokenResponse;
 import jp.games_ranc.DTO.user.LoginRequest;
-import jp.games_ranc.blockchain.service.BlockchainService;
+import jp.games_ranc.DTO.user.SignUpRequest;
+import jp.games_ranc.DTO.user.UserUpdateRequest;
 import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.entity.RefreshToken;
 import jp.games_ranc.entity.User;
@@ -30,13 +30,13 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final BlockchainService blockchainService;
 
     @Transactional
-    public TokenResponse signup(AddUserRequest request) {
-        validateDuplicateUser(request.getEmail());
-        User user = saveUser(request);
-        return createTokenResponse(user);
+    public void signup(@Valid SignUpRequest request) {
+        if (isEmailDuplicate(request.getEmail())) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+        saveUser(request);
     }
 
     @Transactional
@@ -47,13 +47,11 @@ public class UserService {
         return createTokenResponse(user);
     }
 
-    private void validateDuplicateUser(String email) {
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
-        }
+    public boolean isEmailDuplicate(String email) {
+        return userRepository.existsByEmail(email);
     }
 
-    private User saveUser(AddUserRequest request) {
+    private User saveUser(SignUpRequest request) {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         return userRepository.save(User.builder()
                 .email(request.getEmail())
@@ -95,5 +93,17 @@ public class UserService {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
+    }
+
+    @Transactional
+public void updateUser(String email, UserUpdateRequest request) {
+        User user = findByEmail(email);
+        user.updateProfile(request.getNickname());  // 필요한 필드 업데이트
+    }
+
+    @Transactional
+    public void deleteUser(String email) {
+        User user = findByEmail(email);
+        userRepository.delete(user);
     }
 }

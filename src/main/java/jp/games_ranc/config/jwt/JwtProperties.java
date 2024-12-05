@@ -5,13 +5,21 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Component
-@ConfigurationProperties(prefix = "jwt")
-@Getter
+import java.util.Base64;
+
 @Setter
+@Getter
+@Component
+@ConfigurationProperties("jwt")
 public class JwtProperties {
 
     private String issuer;
+    private String secret;
+    private String header;
+    private Long tokenValidityInSeconds;
 
-    private String secretKey;
+    // Base64로 인코딩된 시크릿 키를 반환
+    public String getSecretKey() {
+        return Base64.getEncoder().encodeToString(this.secret.getBytes());
+    }
 }

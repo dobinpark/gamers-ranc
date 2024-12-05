@@ -38,12 +38,15 @@ public class User implements UserDetails {
     private String password;
 
     @CreatedDate
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private int points;  // 유저의 포인트
 
     @Builder
     public User(String email, String password, String nickname) {
@@ -102,5 +105,30 @@ public class User implements UserDetails {
         this.nickname = nickname;
 
         return this;
+    }
+
+    // 프로필 업데이트 메서드
+    public void updateProfile(String nickname) {
+        this.nickname = nickname;
+    }
+    
+    // 비밀번호 변경이 필요한 경우
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void usePoints(int amount) {
+        if (points < amount) {
+            throw new IllegalStateException("포인트가 부족합니다.");
+        }
+        this.points -= amount;
+    }
+
+    public void addPoints(int amount) {
+        this.points += amount;
     }
 }

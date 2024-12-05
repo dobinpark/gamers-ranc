@@ -1,19 +1,22 @@
+/*
 package jp.games_ranc.blockchain.service;
 
 import jp.games_ranc.blockchain.contract.GamersRanCContract;
+import jp.games_ranc.blockchain.exception.BlockchainServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.http.HttpService;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tx.gas.ContractGasProvider;
 import org.web3j.tx.gas.StaticGasProvider;
 import jakarta.annotation.PostConstruct;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -23,25 +26,19 @@ public class BlockchainService {
     @Value("${blockchain.contract.address}")
     private String contractAddress;
     
-    @Value("${blockchain.network.url}")
-    private String networkUrl;
+    private final Web3j web3j;
+    private final KeyStoreService keyStoreService;
+    private final TransactionMonitorService monitorService;
     
-    @Value("${blockchain.wallet.private-key}")
-    private String privateKey;
-    
-    private Web3j web3j;
     private GamersRanCContract contract;
-    private ContractGasProvider gasProvider;
     
     @PostConstruct
     public void initializeBlockchain() {
         try {
-            web3j = Web3j.build(new HttpService(networkUrl));
-            Credentials credentials = Credentials.create(privateKey);
-            
-            gasProvider = new StaticGasProvider(
-                BigInteger.valueOf(20000000000L), // gas price
-                BigInteger.valueOf(6721975L)      // gas limit
+            Credentials credentials = keyStoreService.loadCredentials();
+            ContractGasProvider gasProvider = new StaticGasProvider(
+                web3j.ethGasPrice().send().getGasPrice(),
+                BigInteger.valueOf(6721975L)  // gas limit
             );
             
             contract = GamersRanCContract.load(
@@ -51,63 +48,117 @@ public class BlockchainService {
                 gasProvider
             );
             
-            log.info("블록체인 서비스가 초기화되었습니다. 네트워크: {}", networkUrl);
+            log.info("Blockchain service initialized successfully");
         } catch (Exception e) {
-            log.error("블록체인 서비스 초기화 실패", e);
-            throw new RuntimeException("블록체인 서비스 초기화 실패", e);
+            log.error("Failed to initialize blockchain service", e);
+            throw new BlockchainServiceException("Failed to initialize blockchain", e);
         }
     }
     
-    public void registerUser(String userAddress) {
+    public CompletableFuture<TransactionReceipt> registerUser(String userAddress) {
         try {
-            contract.registerUser().send();
-            log.info("사용자 등록 완료: {}", userAddress);
+            return contract.registerUser()
+                .sendAsync()
+                .thenApply(receipt -> {
+                    log.info("사용자 등록 완료: {}, Transaction Hash: {}", userAddress, receipt.getTransactionHash());
+                    monitorService.trackTransaction(receipt.getTransactionHash());
+                    return receipt;
+                })
+                .exceptionally(e -> {
+                    log.error("사용자 등록 실패: {}", userAddress, e);
+                    throw new BlockchainServiceException("블록체인 사용자 등록 실패", e);
+                });
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
-            log.error("사용자 등록 실패: {}", userAddress, e);
-            throw new RuntimeException("블록체인 사용자 등록 실패", e);
+            log.error("사용자 등록 처리 실패: {}", userAddress, e);
+            throw new BlockchainServiceException("블록체인 사용자 등록 처리 실패", e);
         }
     }
     
-    public void checkIn(String userAddress) {
+    public CompletableFuture<TransactionReceipt> checkIn(String userAddress) {
         try {
-            contract.checkIn().send();
-            log.info("출석 체크 완료: {}", userAddress);
+            return contract.checkIn()
+                .sendAsync()
+                .thenApply(receipt -> {
+                    log.info("출석 체크 완료: {}, Transaction Hash: {}", userAddress, receipt.getTransactionHash());
+                    monitorService.trackTransaction(receipt.getTransactionHash());
+                    return receipt;
+                })
+                .exceptionally(e -> {
+                    log.error("출석 체크 실패: {}", userAddress, e);
+                    throw new BlockchainServiceException("블록체인 출석 체크 실패", e);
+                });
         } catch (Exception e) {
-            log.error("출석 체크 실패: {}", userAddress, e);
-            throw new RuntimeException("블록체인 출석 체크 실패", e);
+            log.error("출석 체크 처리 실패: {}", userAddress, e);
+            throw new BlockchainServiceException("블록체인 출석 체크 처리 실패", e);
         }
     }
     
-    public void createPost(String userAddress, String contentUri, int postType) {
+    public CompletableFuture<TransactionReceipt> createPost(String userAddress, String contentUri, int postType) {
         try {
-            contract.createPost(contentUri, BigInteger.valueOf(postType)).send();
-            log.info("게시물 생성 완료: {}, 작성자: {}", contentUri, userAddress);
+            return contract.createPost(contentUri, BigInteger.valueOf(postType))
+                .sendAsync()
+                .thenApply(receipt -> {
+                    log.info("게시물 생성 완료: {}, 작성자: {}, Transaction Hash: {}", 
+                        contentUri, userAddress, receipt.getTransactionHash());
+                    monitorService.trackTransaction(receipt.getTransactionHash());
+                    return receipt;
+                })
+                .exceptionally(e -> {
+                    log.error("게시물 생성 실패: {}, 작성자: {}", contentUri, userAddress, e);
+                    throw new BlockchainServiceException("블록체인 게시물 생성 실패", e);
+                });
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
-            log.error("게시물 생성 실패: {}, 작성자: {}", contentUri, userAddress, e);
-            throw new RuntimeException("블록체인 게시물 생성 실패", e);
+            log.error("게시물 생성 처리 실패: {}, 작성자: {}", contentUri, userAddress, e);
+            throw new BlockchainServiceException("블록체인 게시물 생성 처리 실패", e);
         }
     }
     
-    public void voteWithPoints(String userAddress, long postId, long points) {
+    public CompletableFuture<TransactionReceipt> voteWithPoints(String userAddress, long postId, long points) {
         try {
-            contract.voteWithPoints(
-                BigInteger.valueOf(postId),
-                BigInteger.valueOf(points)
-            ).send();
-            log.info("포인트 투표 완료: 게시물 ID: {}, 투표자: {}, 포인트: {}", postId, userAddress, points);
+            return contract.voteWithPoints(BigInteger.valueOf(postId), BigInteger.valueOf(points))
+                .sendAsync()
+                .thenApply(receipt -> {
+                    log.info("포인트 투표 완료: 게시물 ID: {}, 투표자: {}, 포인트: {}, Transaction Hash: {}", 
+                        postId, userAddress, points, receipt.getTransactionHash());
+                    monitorService.trackTransaction(receipt.getTransactionHash());
+                    return receipt;
+                })
+                .exceptionally(e -> {
+                    log.error("포인트 투표 실패: 게시물 ID: {}, 투표자: {}", postId, userAddress, e);
+                    throw new BlockchainServiceException("블록체인 포인트 투표 실패", e);
+                });
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
-            log.error("포인트 투표 실패: 게시물 ID: {}, 투표자: {}", postId, userAddress, e);
-            throw new RuntimeException("블록체인 포인트 투표 실패", e);
+            log.error("포인트 투표 처리 실패: 게시물 ID: {}, 투표자: {}", postId, userAddress, e);
+            throw new BlockchainServiceException("블록체인 포인트 투표 처리 실패", e);
         }
     }
     
-    public void formParty(String leaderAddress, List<String> members) {
+    public CompletableFuture<TransactionReceipt> formParty(String leaderAddress, List<String> members) {
         try {
-            contract.formParty(members).send();
-            log.info("파티 형성 완료: 리더: {}, 멤버: {}", leaderAddress, members);
+            List<String> updatedMembers = new ArrayList<>(members);
+            if (!updatedMembers.contains(leaderAddress)) {
+                updatedMembers.add(0, leaderAddress);
+            }
+            
+            return contract.formParty(updatedMembers)
+                .sendAsync()
+                .thenApply(receipt -> {
+                    log.info("파티 형성 완료: 리더: {}, 멤버: {}, Transaction Hash: {}", 
+                        leaderAddress, updatedMembers, receipt.getTransactionHash());
+                    monitorService.trackTransaction(receipt.getTransactionHash());
+                    return receipt;
+                })
+                .exceptionally(e -> {
+                    log.error("파티 형성 실패: 리더: {}, 멤버: {}", leaderAddress, updatedMembers, e);
+                    throw new BlockchainServiceException("블록체인 파티 형성 실패", e);
+                });
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
-            log.error("파티 형성 실패: 리더: {}", leaderAddress, e);
-            throw new RuntimeException("블록체인 파티 형성 실패", e);
+            log.error("파티 형성 처리 실패: 리더: {}, 멤버: {}", leaderAddress, members, e);
+            throw new BlockchainServiceException("블록체인 파티 형성 처리 실패", e);
         }
     }
-} 
+} */

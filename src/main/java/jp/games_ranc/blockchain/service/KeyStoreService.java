@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.blockchain.service;
 
 import jp.games_ranc.blockchain.exception.BlockchainServiceException;
@@ -28,4 +29,4 @@ public class KeyStoreService {
             throw new BlockchainServiceException("Failed to load credentials from keystore", e);
         }
     }
-} 
+} */

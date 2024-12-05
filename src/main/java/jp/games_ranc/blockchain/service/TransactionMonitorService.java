@@ -1,3 +1,4 @@
+/*
 package jp.games_ranc.blockchain.service;
 
 import jp.games_ranc.blockchain.exception.BlockchainServiceException;
@@ -58,4 +59,4 @@ public class TransactionMonitorService {
         
         return receipt;
     }
-} 
+} */

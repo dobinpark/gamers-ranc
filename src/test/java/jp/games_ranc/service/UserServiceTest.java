@@ -1,7 +1,6 @@
 package jp.games_ranc.service;
 
 import jp.games_ranc.DTO.token.TokenResponse;
-import jp.games_ranc.DTO.user.AddUserRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -4,15 +4,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import jp.games_ranc.config.jwt.TokenProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
@@ -20,29 +21,39 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private final TokenProvider tokenProvider;
     private final static String HEADER_AUTHORIZATION = "Authorization";
     private final static String TOKEN_PREFIX = "Bearer ";
-    private static final Logger logger = LoggerFactory.getLogger(TokenAuthenticationFilter.class);
+
+    private static final List<String> EXCLUDE_URLS = Arrays.asList(
+            "/api/users/signup",
+            "/api/users/login",
+            "/api/users/check-email",
+            "/api/users/check-nickname"
+    );
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String token = getAccessToken(request.getHeader(HEADER_AUTHORIZATION));
-            if (tokenProvider.validToken(token)) {
-                Authentication authentication = tokenProvider.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("Security Context에 '{}' 인증 정보를 저장했습니다", authentication.getName());
-            }
-        } catch (Exception e) {
-            logger.error("Security Context에 인증 정보를 저장할 수 없습니다: {}", e.getMessage());
-        }
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         
+        // 인증이 필요없는 URL인 경우 토큰 검증 건너뛰기
+        String path = request.getRequestURI();
+        if (EXCLUDE_URLS.stream().anyMatch(path::startsWith)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = resolveToken(request);
+
+        if (StringUtils.hasText(token) && tokenProvider.validToken(token)) {
+            Authentication authentication = tokenProvider.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+
         filterChain.doFilter(request, response);
     }
 
-    private String getAccessToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith(TOKEN_PREFIX)) {
-            return authorizationHeader.substring(TOKEN_PREFIX.length());
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(HEADER_AUTHORIZATION);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(TOKEN_PREFIX)) {
+            return bearerToken.substring(TOKEN_PREFIX.length());
         }
         return null;
     }

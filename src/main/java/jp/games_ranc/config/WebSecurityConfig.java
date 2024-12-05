@@ -40,7 +40,8 @@ public class WebSecurityConfig {
         public WebSecurityCustomizer configure() {
                 return (web) -> web.ignoring()
                                 .requestMatchers(toH2Console())
-                                .requestMatchers("/css/**", "/js/**", "/images/**");
+                                .requestMatchers("/css/**", "/js/**", "/images/**")
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html");
         }
 
         // 특정 HTTP 요청에 대한 웹 기반 보안 구성
@@ -56,7 +57,10 @@ public class WebSecurityConfig {
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/images/**",
-                                                                "/h2-console/**"
+                                                                "/h2-console/**",
+                                                                "/swagger-ui/**",          // Swagger UI 허용
+                                                                "/v3/api-docs/**",         // Swagger API docs 허용
+                                                                "/swagger-ui.html"         // Swagger UI HTML 허용
                                                             ).permitAll()
                                                 .anyRequest().authenticated())
                                 .addFilterBefore(tokenAuthenticationFilter(),
