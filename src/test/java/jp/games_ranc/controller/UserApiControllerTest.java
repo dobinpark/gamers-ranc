@@ -1,5 +1,6 @@
 package jp.games_ranc.controller;
 
+import jp.games_ranc.DTO.user.SignUpRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,7 +22,7 @@ class UserApiControllerTest {
     @Test
     void signupTest() throws Exception {
         // given
-        AddUserRequest request = new AddUserRequest();
+        SignUpRequest request = new SignUpRequest();
         request.setEmail("test@test.com");
         request.setPassword("password123");
         request.setNickname("tester");
