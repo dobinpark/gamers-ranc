@@ -17,16 +17,7 @@ spring:
     console:
       enabled: true
       path: /h2-console
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: 326457347367-v...
-            client-secret: GOCSPX-z...
-            scope:
-              - email
-              - profile
+
   sql:
     init:
       mode: always
@@ -42,10 +33,11 @@ spring:
     cache: false
 
 jwt:
-  issuer: ff09560810@gmail.com
-  secret_key: gamers-ranc
+  issuer: gamers_ranc
+  secret: 6F4FD59C52C94953A2FDBD219F382C8DA2EE78B33569C83C87614F6C3E
   header: Authorization
-  token-validity-in-seconds: 86400
+  expiry_seconds: 3600
+  refresh_expiry_seconds: 86400
 
 springdoc:
   swagger-ui:
@@ -54,8 +46,9 @@ springdoc:
 
 blockchain:
   network:
-    url: ${BLOCKCHAIN_NETWORK_URL:http://localhost:8545}  # 로컬 Ganache나 테스트넷 URL
+    url: ${BLOCKCHAIN_NETWORK_URL:http://localhost:8545} # 로컬 Ganache나 테스트넷 URL
   contract:
-    address: ${BLOCKCHAIN_CONTRACT_ADDRESS}  # 배포된 컨트랙트 주소
-  wallet:
-    private-key: ${BLOCKCHAIN_WALLET_PRIVATE_KEY}  # 관리자 지갑 비밀키
+    address: ${BLOCKCHAIN_CONTRACT_ADDRESS}
+  keystore:
+    path: ${BLOCKCHAIN_KEYSTORE_PATH}
+    password: ${BLOCKCHAIN_KEYSTORE_PASSWORD}
