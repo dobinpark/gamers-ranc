@@ -6,19 +6,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jp.games_ranc.DTO.token.TokenResponse;
-import jp.games_ranc.DTO.user.LoginRequest;
-import jp.games_ranc.DTO.user.SignUpRequest;
-import jp.games_ranc.DTO.user.UserApiResponse;
-import jp.games_ranc.DTO.user.UserUpdateRequest;
+import jp.games_ranc.DTO.user.*;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @Slf4j
 @Tag(name = "User", description = "사용자 API")
@@ -68,14 +70,59 @@ public class UserApiController {
     }
 
     // 회원 정보 조회
-    @Operation(summary = "회원 정보 조회", description = "특정 사용자의 정보를 조회합니다.")
+    @Operation(
+        summary = "회원 정보 조회",
+        description = "특정 사용자의 정보를 조회합니다.",
+        parameters = {
+            @Parameter(
+                name = "email",
+                description = "조회할 사용자의 이메일",
+                required = true,
+                example = "user@example.com"
+            )
+        }
+    )
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = UserResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "권한 없음",
+            content = @Content(schema = @Schema(implementation = UserApiResponse.class))
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "사용자를 찾을 수 없음",
+            content = @Content(schema = @Schema(implementation = UserApiResponse.class))
+        )
+    })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{email}")
-    public ResponseEntity<?> getUser(@Parameter(description = "사용자 이메일") @PathVariable String email) {
+    public ResponseEntity<?> getUser(
+            @Parameter(description = "사용자 이메일") @PathVariable String email,
+            @Parameter(hidden = true) Principal principal) {
         try {
+            // 본인 정보 확인 또는 관리자 권한 체크
+            if (!email.equals(principal.getName()) && !userService.isAdmin(principal.getName())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new UserApiResponse(false, "접속 권한이 없습니다."));
+            }
+
             User user = userService.findByEmail(email);
-            return ResponseEntity.ok(user);
+
+            // 민감한 정보 제외
+            UserResponse userResponse = UserResponse.builder()
+                    .email(user.getEmail())
+                    .nickname(user.getNickname())
+                    .createdAt(user.getCreatedAt())
+                    .build();
+                
+            return ResponseEntity.ok(userResponse);
         } catch (Exception e) {
+            log.error("사용자 조회 실패: {}", email, e);
             return ResponseEntity.badRequest()
                     .body(new UserApiResponse(false, "사용자 조회에 실패했습니다: " + e.getMessage()));
         }

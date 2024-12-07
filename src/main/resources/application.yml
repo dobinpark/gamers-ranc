@@ -9,7 +9,7 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL
+    url: jdbc:h2:mem:testdb
     username: sa
     password:
     driver-class-name: org.h2.Driver

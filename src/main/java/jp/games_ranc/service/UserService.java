@@ -15,12 +15,14 @@ import jp.games_ranc.exception.ErrorCode;
 import jp.games_ranc.repository.RefreshTokenRepository;
 import jp.games_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -105,5 +107,17 @@ public void updateUser(String email, UserUpdateRequest request) {
     public void deleteUser(String email) {
         User user = findByEmail(email);
         userRepository.delete(user);
+    }
+
+    public boolean isAdmin(String email) {
+        try {
+            User user = findByEmail(email);
+            // ROLE_ADMIN 권한을 가진 사용자인지 확인
+            return user.getRoles().stream()
+                    .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+        } catch (Exception e) {
+            log.error("관리자 권한 확인 실패: {}", email, e);
+            return false;
+        }
     }
 }
