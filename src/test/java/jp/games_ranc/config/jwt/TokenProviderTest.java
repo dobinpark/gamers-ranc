@@ -1,9 +1,5 @@
 package jp.games_ranc.config.jwt;
 
-import io.jsonwebtoken.Jwts;
-import jp.games_ranc.config.jwt.JwtFactory;
-import jp.games_ranc.config.jwt.JwtProperties;
-import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.repository.UserRepository;
 
@@ -16,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.util.Date;
@@ -32,9 +27,6 @@ class TokenProviderTest {
 
     @Autowired
     private TokenProvider tokenProvider;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @MockBean
     private JwtProperties jwtProperties;

@@ -48,14 +48,15 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
-    private int points;  // 유저의 포인트
+    private int points; // 유저의 포인트
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     private Set<Role> roles = new HashSet<>();
 
     @Builder
-    public User(String email, String password, String nickname) {
+    public User(Long id, String email, String password, String nickname) {
+        this.id = id;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
@@ -117,7 +118,7 @@ public class User implements UserDetails {
     public void updateProfile(String nickname) {
         this.nickname = nickname;
     }
-    
+
     // 비밀번호 변경이 필요한 경우
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
