@@ -22,6 +22,9 @@ public class JwtProperties {
 
     // Base64로 인코딩된 시크릿 키를 반환
     public String getSecretKey() {
-        return Base64.getEncoder().encodeToString(this.secret.getBytes());
+        if (secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException("JWT secret key is not configured");
+        }
+        return Base64.getEncoder().encodeToString(secret.getBytes());
     }
 }

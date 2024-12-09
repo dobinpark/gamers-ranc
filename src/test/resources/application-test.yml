@@ -18,7 +18,7 @@ spring:
             mode: none
 
 jwt:
-  issuer: test_issuer
-  secret: test_secret_key_test_secret_key_test_secret_key
+  issuer: games_ranc_test
+  secret: testsecretkeytestsecretkeytestsecretkeytestsecretkeytestsecretkeytestsecretkey
   header: Authorization
   token-validity-in-seconds: 86400 
