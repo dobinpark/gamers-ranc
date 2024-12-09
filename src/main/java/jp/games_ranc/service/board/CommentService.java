@@ -1,6 +1,5 @@
 package jp.games_ranc.service.board;
 
-import jp.games_ranc.DTO.board.CommentRequest;
 import jp.games_ranc.DTO.board.CommentResponse;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.entity.board.Comment;

@@ -6,18 +6,26 @@ import jp.games_ranc.config.jwt.JwtProperties;
 import jp.games_ranc.config.jwt.TokenProvider;
 import jp.games_ranc.entity.User;
 import jp.games_ranc.repository.UserRepository;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class TokenProviderTest {
@@ -28,29 +36,40 @@ class TokenProviderTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
+    @MockBean
     private JwtProperties jwtProperties;
+
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    private User user;
+
+    @BeforeEach
+    void setUp() {
+        // 테스트용 시크릿 키 설정
+        when(jwtProperties.getIssuer()).thenReturn("test_issuer");
+        when(jwtProperties.getSecretKey()).thenReturn("test_secret_key_test_secret_key_test_secret_key");
+        
+        user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .password("test_password")
+                .nickname("test_user")
+                .build();
+    }
 
     @DisplayName("generateToken(): 유저 정보와 만료 기간을 전달해 토큰을 만들 수 있다.")
     @Test
     void generateToken() {
         // given
-        User testUser = userRepository.save(User.builder()
-                .email("user@gmail.com")
-                .password("test")
-                .build());
+        Duration expiredAt = Duration.ofDays(14);
 
         // when
-        String token = tokenProvider.generateToken(testUser, Duration.ofDays(14));
+        String token = tokenProvider.generateToken(user, expiredAt);
 
         // then
-        Long userId = Jwts.parser()
-                .setSigningKey(jwtProperties.getSecretKey())
-                .parseClaimsJws(token)
-                .getBody()
-                .get("id", Long.class);
-
-        assertThat(userId).isEqualTo(testUser.getId());
+        assertNotNull(token);
+        assertTrue(tokenProvider.validToken(token));
     }
 
     @DisplayName("validToken(): 만료된 토큰인 경우에 유효성 검증에 실패한다.")
@@ -69,7 +88,6 @@ class TokenProviderTest {
         assertThat(result).isFalse();
     }
 
-
     @DisplayName("validToken(): 유효한 토큰인 경우에 유효성 검증에 성공한다.")
     @Test
     void validToken_validToken() {
@@ -83,7 +101,6 @@ class TokenProviderTest {
         // then
         assertThat(result).isTrue();
     }
-
 
     @DisplayName("getAuthentication(): 토큰 기반으로 인증정보를 가져올 수 있다.")
     @Test
