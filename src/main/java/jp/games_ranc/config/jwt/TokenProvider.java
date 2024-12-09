@@ -31,18 +31,24 @@ public class TokenProvider {
         String secretKey = jwtProperties.getSecretKey();
         
         if (secretKey == null || secretKey.trim().isEmpty()) {
+            log.error("JWT secret key is not configured");
             throw new IllegalStateException("JWT secret key is not properly configured");
         }
 
-        return Jwts.builder()
-                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .setIssuer(jwtProperties.getIssuer())
-                .setIssuedAt(now)
-                .setExpiration(expiry)
-                .setSubject(user.getEmail())
-                .claim("id", user.getId())
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+        try {
+            return Jwts.builder()
+                    .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                    .setIssuer(jwtProperties.getIssuer())
+                    .setIssuedAt(now)
+                    .setExpiration(expiry)
+                    .setSubject(user.getEmail())
+                    .claim("id", user.getId())
+                    .signWith(SignatureAlgorithm.HS256, secretKey)
+                    .compact();
+        } catch (Exception e) {
+            log.error("Token generation failed: ", e);
+            throw new IllegalStateException("Token generation failed", e);
+        }
     }
 
     // 토큰 유효성 검증 메서드 추가

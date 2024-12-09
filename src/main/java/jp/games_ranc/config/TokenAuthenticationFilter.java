@@ -32,19 +32,19 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
-        // 인증이 필요없는 URL인 경우 토큰 검증 건너뛰기
-        String path = request.getRequestURI();
-        if (EXCLUDE_URLS.stream().anyMatch(path::startsWith)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = resolveToken(request);
-
-        if (StringUtils.hasText(token) && tokenProvider.validToken(token)) {
-            Authentication authentication = tokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            String token = resolveToken(request);
+            
+            if (StringUtils.hasText(token)) {
+                if (tokenProvider.validToken(token)) {
+                    Authentication authentication = tokenProvider.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    log.warn("Invalid JWT token");
+                }
+            }
+        } catch (Exception e) {
+            log.error("Token authentication failed: ", e);
         }
 
         filterChain.doFilter(request, response);

@@ -33,11 +33,10 @@ spring:
     cache: false
 
 jwt:
-  issuer: gamers_ranc
-  secret: 6F4FD59C52C94953A2FDBD219F382C8DA2EE78B33569C83C87614F6C3E
+  issuer: games_ranc
+  secret: ${JWT_SECRET_KEY}
   header: Authorization
-  expiry_seconds: 3600
-  refresh_expiry_seconds: 86400
+  token-validity-in-seconds: 86400
 
 springdoc:
   swagger-ui:
