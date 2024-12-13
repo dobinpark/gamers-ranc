@@ -19,6 +19,7 @@ public class Post extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id")
     private Board board; // 게시판
 
     @ManyToOne(fetch = FetchType.LAZY)

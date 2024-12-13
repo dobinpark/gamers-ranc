@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.util.Date;
@@ -36,12 +37,17 @@ class TokenProviderTest {
 
     private User user;
 
+    private String SECRET_KEY = "testsecretkeytestsecretkeytestsecretkeytestsecretkeytestsecretkeytestsecretkey";
+    private String ISSUER = "games_ranc_test";
+
     @BeforeEach
     void setUp() {
-        // 테스트용 시크릿 키 설정
-        when(jwtProperties.getIssuer()).thenReturn("test_issuer");
-        when(jwtProperties.getSecretKey()).thenReturn("test_secret_key_test_secret_key_test_secret_key");
-        
+        ReflectionTestUtils.setField(tokenProvider, "jwtProperties", new JwtProperties() {{
+            setSecret(SECRET_KEY);
+            setIssuer(ISSUER);
+            setTokenValidityInSeconds(86400L);
+        }});
+
         user = User.builder()
                 .id(1L)
                 .email("test@example.com")
@@ -54,10 +60,15 @@ class TokenProviderTest {
     @Test
     void generateToken() {
         // given
+        User testUser = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickname("testuser")
+                .build();
         Duration expiredAt = Duration.ofDays(14);
 
         // when
-        String token = tokenProvider.generateToken(user, expiredAt);
+        String token = tokenProvider.generateToken(testUser, expiredAt);
 
         // then
         assertNotNull(token);

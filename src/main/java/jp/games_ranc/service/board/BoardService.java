@@ -40,7 +40,6 @@ public class BoardService {
     public List<PostResponse> getPosts(String boardCode, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size);
         return postRepository.findByBoard_BoardCode(boardCode, pageRequest)
-                .getContent()
                 .stream()
                 .map(PostResponse::new)
                 .collect(Collectors.toList());
@@ -57,7 +56,7 @@ public class BoardService {
     public PostResponse updatePost(String boardCode, Long postId, PostRequest request) {
         Post post = postRepository.findByIdAndBoard_BoardCode(postId, boardCode)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-        
+
         post.update(request.getTitle(), request.getContent());
         return new PostResponse(post);
     }
@@ -66,7 +65,7 @@ public class BoardService {
     public void deletePost(String boardCode, Long postId) {
         Post post = postRepository.findByIdAndBoard_BoardCode(postId, boardCode)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-        
+
         postRepository.delete(post);
     }
 
@@ -74,7 +73,7 @@ public class BoardService {
     public void likePost(String boardCode, Long postId) {
         Post post = postRepository.findByIdAndBoard_BoardCode(postId, boardCode)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-        
+
         post.incrementLikeCount();
     }
 
@@ -82,7 +81,7 @@ public class BoardService {
     public void pointRecommendPost(String boardCode, Long postId, int points) {
         Post post = postRepository.findByIdAndBoard_BoardCode(postId, boardCode)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-        
+
         post.addPointCount(points);
     }
 }

@@ -1,6 +1,7 @@
 package jp.games_ranc.config.jwt;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import jp.games_ranc.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
@@ -30,44 +32,31 @@ public class TokenProvider {
         Date now = new Date();
         String secretKey = jwtProperties.getSecretKey();
         
-        if (secretKey == null || secretKey.trim().isEmpty()) {
-            log.error("JWT secret key is not configured");
-            throw new IllegalStateException("JWT secret key is not properly configured");
-        }
-
-        try {
-            return Jwts.builder()
-                    .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                    .setIssuer(jwtProperties.getIssuer())
-                    .setIssuedAt(now)
-                    .setExpiration(expiry)
-                    .setSubject(user.getEmail())
-                    .claim("id", user.getId())
-                    .signWith(SignatureAlgorithm.HS256, secretKey)
-                    .compact();
-        } catch (Exception e) {
-            log.error("Token generation failed: ", e);
-            throw new IllegalStateException("Token generation failed", e);
-        }
+        return Jwts.builder()
+                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                .setIssuer(jwtProperties.getIssuer())
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .setSubject(user.getEmail())
+                .claim("id", user.getId())
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)),
+                         SignatureAlgorithm.HS256)
+                .compact();
     }
 
     // 토큰 유효성 검증 메서드 추가
     public boolean validToken(String token) {
         try {
-            Jwts.parser()
-                    .setSigningKey(jwtProperties.getSecretKey())
-                    .parseClaimsJws(token);
+            Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(jwtProperties.getSecretKey()
+                    .getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseClaimsJws(token);
             return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.error("잘못된 JWT 서명입니다.", e);
-        } catch (ExpiredJwtException e) {
-            log.error("만료된 JWT 토큰입니다.", e);
-        } catch (UnsupportedJwtException e) {
-            log.error("지원되지 않는 JWT 토큰입니다.", e);
-        } catch (IllegalArgumentException e) {
-            log.error("JWT 토큰이 잘못되었습니다.", e);
+        } catch (Exception e) {
+            log.error("Token validation failed: ", e);
+            return false;
         }
-        return false;
     }
 
     // 토큰에서 사용자 정보 추출
