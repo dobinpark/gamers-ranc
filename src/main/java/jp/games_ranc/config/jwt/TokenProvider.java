@@ -23,9 +23,30 @@ public class TokenProvider {
 
     private final JwtProperties jwtProperties;
 
-    public String generateToken(User user, Duration expiredAt) {
+    public String generateToken(Date expiry, User user) {
         Date now = new Date();
-        return makeToken(new Date(now.getTime() + expiredAt.toMillis()), user);
+        String secretKey = jwtProperties.getSecretKey();
+
+        // 시크릿 키 검증 로직 추가
+        if (secretKey == null || secretKey.trim().isEmpty()) {
+            log.error("JWT secret key is not configured");
+            throw new IllegalStateException("JWT secret key is not properly configured");
+        }
+
+        try {
+            return Jwts.builder()
+                    .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                    .setIssuer(jwtProperties.getIssuer())
+                    .setIssuedAt(now)
+                    .setExpiration(expiry)
+                    .setSubject(user.getEmail())
+                    .claim("id", user.getId())
+                    .signWith(SignatureAlgorithm.HS256, secretKey)
+                    .compact();
+        } catch (Exception e) {
+            log.error("Token generation failed : ", e);
+            throw new IllegalStateException("Token generation failed", e);
+        }
     }
 
     private String makeToken(Date expiry, User user) {
@@ -39,8 +60,7 @@ public class TokenProvider {
                 .setExpiration(expiry)
                 .setSubject(user.getEmail())
                 .claim("id", user.getId())
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)),
-                         SignatureAlgorithm.HS256)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
     }
 
