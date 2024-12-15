@@ -1,28 +1,16 @@
 package jp.games_ranc.service;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import jp.games_ranc.DTO.token.TokenResponse;
-import jp.games_ranc.DTO.user.LoginRequest;
-import jp.games_ranc.DTO.user.SignUpRequest;
-import jp.games_ranc.DTO.user.UserUpdateRequest;
-import jp.games_ranc.config.jwt.TokenProvider;
-import jp.games_ranc.entity.RefreshToken;
-import jp.games_ranc.entity.User;
-import jp.games_ranc.exception.CustomException;
-import jp.games_ranc.exception.ErrorCode;
-import jp.games_ranc.repository.RefreshTokenRepository;
+import jp.games_ranc.DTO.LoginRequest;
+import jp.games_ranc.DTO.SignupRequest;
+import jp.games_ranc.DTO.UserResponse;
+import jp.games_ranc.DTO.UserUpdateRequest;
+import jp.games_ranc.Entity.User;
 import jp.games_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-
-@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -30,94 +18,75 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
-    public void signup(@Valid SignUpRequest request) {
-        if (isEmailDuplicate(request.getEmail())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
-        }
-        saveUser(request);
-    }
+    public UserResponse signup(SignupRequest request) {
+        validateSignup(request);
 
-    @Transactional
-    public TokenResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        validatePassword(request.getPassword(), user.getPassword());
-        return createTokenResponse(user);
-    }
-
-    public boolean isEmailDuplicate(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    private User saveUser(SignUpRequest request) {
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        return userRepository.save(User.builder()
+        User user = User.builder()
                 .email(request.getEmail())
-                .password(encodedPassword)
+                .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
-                .build());
+                .build();
+
+        return UserResponse.from(userRepository.save(user));
     }
 
-    private TokenResponse createTokenResponse(User user) {
-        String accessToken = tokenProvider.generateToken(user, Duration.ofHours(2));
-        String refreshToken = tokenProvider.generateToken(user, Duration.ofDays(7));
+    public UserResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
 
-        RefreshToken refreshTokenEntity = new RefreshToken(user.getId(), refreshToken);
-        refreshTokenRepository.save(refreshTokenEntity);
-
-        return new TokenResponse(accessToken, refreshToken);
-    }
-
-    public User findById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Unexpected user"));
-    }
-
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Unexpected user"));
-    }
-
-    private void addTokenToCookie(HttpServletResponse response, String name, String value, Duration maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) maxAge.toSeconds());
-        cookie.setHttpOnly(true); // XSS 공격 방지
-        cookie.setSecure(true); // HTTPS에서만 전송
-        response.addCookie(cookie);
-    }
-
-    private void validatePassword(String rawPassword, String encodedPassword) {
-        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
         }
+
+        return UserResponse.from(user);
+    }
+
+    public UserResponse findByEmail(String email) {
+        return UserResponse.from(getUserByEmail(email));
     }
 
     @Transactional
-public void updateUser(String email, UserUpdateRequest request) {
-        User user = findByEmail(email);
-        user.updateProfile(request.getNickname());  // 필요한 필드 업데이트
+    public UserResponse updateUser(String email, UserUpdateRequest request) {
+        User user = getUserByEmail(email);
+
+        if (request.getNickname() != null) {
+            validateNickname(request.getNickname());
+        }
+
+        user.update(
+                request.getNickname(),
+                request.getPassword() != null ?
+                        passwordEncoder.encode(request.getPassword()) : null
+        );
+
+        return UserResponse.from(user);
     }
 
     @Transactional
     public void deleteUser(String email) {
-        User user = findByEmail(email);
+        User user = getUserByEmail(email);
         userRepository.delete(user);
     }
 
-    public boolean isAdmin(String email) {
-        try {
-            User user = findByEmail(email);
-            // ROLE_ADMIN 권한을 가진 사용자인지 확인
-            return user.getRoles().stream()
-                    .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
-        } catch (Exception e) {
-            log.error("관리자 권한 확인 실패: {}", email, e);
-            return false;
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
+    }
+
+    private void validateSignup(SignupRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다");
+        }
+        if (userRepository.existsByNickname(request.getNickname())) {
+            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
+        }
+    }
+
+    private void validateNickname(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
         }
     }
 }
