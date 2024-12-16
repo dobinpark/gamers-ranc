@@ -1,6 +1,6 @@
-package jp.games_ranc.DTO;
+package jp.games_ranc.DTO.user;
 
-import jp.games_ranc.Entity.User;
+import jp.games_ranc.Entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

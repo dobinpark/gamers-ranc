@@ -1,10 +1,10 @@
 package jp.games_ranc.service;
 
-import jp.games_ranc.DTO.LoginRequest;
-import jp.games_ranc.DTO.SignupRequest;
-import jp.games_ranc.DTO.UserResponse;
-import jp.games_ranc.DTO.UserUpdateRequest;
-import jp.games_ranc.Entity.User;
+import jp.games_ranc.DTO.user.LoginRequest;
+import jp.games_ranc.DTO.user.SignupRequest;
+import jp.games_ranc.DTO.user.UserResponse;
+import jp.games_ranc.DTO.user.UserUpdateRequest;
+import jp.games_ranc.Entity.user.User;
 import jp.games_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -122,5 +122,11 @@ public class UserService {
         if (userRepository.existsByNickname(nickname)) {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
         }
+    }
+
+    // findUserByEmail 메서드 추가
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
     }
 }

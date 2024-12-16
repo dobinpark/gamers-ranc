@@ -1,4 +1,4 @@
-package jp.games_ranc.DTO;
+package jp.games_ranc.DTO.post;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -6,8 +6,9 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserUpdateRequest {
+public class PostUpdateRequest {
 
-    private String nickname;
-    private String password;
+    private String title;
+
+    private String content;
 }

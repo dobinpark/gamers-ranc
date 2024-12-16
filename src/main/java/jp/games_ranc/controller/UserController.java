@@ -1,10 +1,10 @@
 package jp.games_ranc.controller;
 
 import jakarta.validation.Valid;
-import jp.games_ranc.DTO.LoginRequest;
-import jp.games_ranc.DTO.SignupRequest;
-import jp.games_ranc.DTO.UserResponse;
-import jp.games_ranc.DTO.UserUpdateRequest;
+import jp.games_ranc.DTO.user.LoginRequest;
+import jp.games_ranc.DTO.user.SignupRequest;
+import jp.games_ranc.DTO.user.UserResponse;
+import jp.games_ranc.DTO.user.UserUpdateRequest;
 import jp.games_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

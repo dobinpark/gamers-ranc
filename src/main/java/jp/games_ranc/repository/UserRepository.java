@@ -1,6 +1,6 @@
 package jp.games_ranc.repository;
 
-import jp.games_ranc.Entity.User;
+import jp.games_ranc.Entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

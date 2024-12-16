@@ -1,6 +1,7 @@
-package jp.games_ranc.Entity;
+package jp.games_ranc.Entity.user;
 
 import jakarta.persistence.*;
+import jp.games_ranc.Entity.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
