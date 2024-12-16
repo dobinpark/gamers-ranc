@@ -1,39 +1,13 @@
 spring:
-  # JPA 설정
+  profiles:
+    active: local  # 기본적으로 local 프로필 사용
+
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update    # 애플리케이션 시작 시 테이블 새로 생성
-    show-sql: true        # SQL 쿼리 로깅
     properties:
       hibernate:
-        format_sql: true  # SQL 쿼리 포맷팅
+        format_sql: true
+    show-sql: true
 
-  # H2 데이터베이스 설정
-  datasource:
-    h2:
-      url: jdbc:h2:mem:testdb
-      username: sa
-      password:
-      driver-class-name: org.h2.Driver
-
-  # MySQL 데이터베이스 설정
-  mysql:
-    datasource:
-      url: jdbc:mysql://database-1.cxk3q2vynsyj.ap-northeast-2.rds.amazonaws.com:3306/Gamers?useSSL=false&serverTimezone=UTC
-      username: admin
-      password: ddgh0919
-      driver-class-name: com.mysql.cj.jdbc.Driver
-
-  # H2 콘솔 설정
-  h2:
-    console:
-      enabled: true       # H2 콘솔 활성화
-      path: /h2-console   # 콘솔 경로
-      settings:
-        web-allow-others: true
-
-# Swagger UI 설정
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

@@ -60,6 +60,16 @@ dependencies {
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
 }
 
+bootJar {
+    // JAR 파일로 빌드할 때 prod 프로필 적용
+    manifest {
+        attributes(
+                'Main-Class': 'jp.games_ranc.GamesRanCApplication',
+                'Spring-Profile': 'prod'
+        )
+    }
+}
+
 test {
     useJUnitPlatform()
 }
