@@ -61,10 +61,10 @@ dependencies {
 }
 
 bootJar {
-    // JAR 파일로 빌드할 때 prod 프로필 적용
+    archiveFileName = 'Games_RanC-1.0.jar'
+    mainClass.set('jp.games_ranc.GamesRanCApplication')
     manifest {
         attributes(
-                'Main-Class': 'jp.games_ranc.GamesRanCApplication',
                 'Spring-Profile': 'prod'
         )
     }
