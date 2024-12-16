@@ -3,7 +3,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create    # 애플리케이션 시작 시 테이블 새로 생성
+      ddl-auto: update    # 애플리케이션 시작 시 테이블 새로 생성
     show-sql: true        # SQL 쿼리 로깅
     properties:
       hibernate:
@@ -11,10 +11,19 @@ spring:
 
   # H2 데이터베이스 설정
   datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    h2:
+      url: jdbc:h2:mem:testdb
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+
+  # MySQL 데이터베이스 설정
+  mysql:
+    datasource:
+      url: jdbc:mysql://database-1.cxk3q2vynsyj.ap-northeast-2.rds.amazonaws.com:3306/Gamers?useSSL=false&serverTimezone=UTC
+      username: admin
+      password: ddgh0919
+      driver-class-name: com.mysql.cj.jdbc.Driver
 
   # H2 콘솔 설정
   h2:
