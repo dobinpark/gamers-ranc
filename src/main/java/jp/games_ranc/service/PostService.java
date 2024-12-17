@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,9 +29,9 @@ public class PostService <T extends Post> {
 
     // 게시글 생성
     @Transactional
-    public PostResponse createPost(String userEmail, PostCreateRequest request, Function<PostCreateRequest, T> creator) {
+    public PostResponse createPost(String userEmail, PostCreateRequest request, BiFunction<PostCreateRequest, User, T> creator) {
         User user = userService.findUserByEmail(userEmail);
-        T post = creator.apply(request);
+        T post = creator.apply(request, user);
         return PostResponse.from(postRepository.save(post));
     }
 
@@ -45,7 +46,7 @@ public class PostService <T extends Post> {
 
     // 게시글 목록 조회
     public List<PostResponse> getAllPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc().stream()
+return postRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(PostResponse::from)
                 .collect(Collectors.toList());
     }
