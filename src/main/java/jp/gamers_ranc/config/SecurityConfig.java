@@ -38,6 +38,8 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // API 엔드포인트 접근 허용
                         .requestMatchers("/api/users/**").permitAll()
+                        // 관리자 전용 API
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )

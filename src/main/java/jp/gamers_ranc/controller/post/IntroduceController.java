@@ -95,4 +95,19 @@ public class IntroduceController {
         postService.deletePost(id, userEmail);
         return ResponseEntity.noContent().build();
     }
+
+    // 관리자 권한으로 게시글 삭제
+    @Operation(summary = "관리자 권한으로 게시글 삭제", description = "관리자가 특정 게시글을 강제 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "삭제 성공"),
+            @ApiResponse(responseCode = "403", description = "관리자 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "게시글 없음")
+    })
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Void> deletePostByAdmin(
+            @PathVariable Long id,
+            @RequestHeader("X-USER-EMAIL") String adminEmail) {
+        postService.deletePostByAdmin(id, adminEmail);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -5,7 +5,11 @@ import jp.gamers_ranc.DTO.post.PostResponse;
 import jp.gamers_ranc.DTO.post.PostUpdateRequest;
 import jp.gamers_ranc.Entity.post.Post;
 import jp.gamers_ranc.Entity.user.User;
+import jp.gamers_ranc.exception.PostNotFoundException;
+import jp.gamers_ranc.exception.UnauthorizedException;
+import jp.gamers_ranc.exception.UserNotFoundException;
 import jp.gamers_ranc.repository.PostRepository;
+import jp.gamers_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +29,7 @@ public class PostService <T extends Post> {
 
     private final PostRepository<T> postRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
 
     // 게시글 생성
     @Transactional
@@ -38,7 +43,7 @@ public class PostService <T extends Post> {
     @Transactional
     public PostResponse getPost(Long id) {
         T post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다"));
+                .orElseThrow(() -> new PostNotFoundException(id));
         post.increaseViewCount();
         return PostResponse.from(post);
     }
@@ -62,7 +67,7 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
     public PostResponse updatePost(Long id, String userEmail, PostUpdateRequest request) {
         User user = userService.findUserByEmail(userEmail);
         T post = postRepository.findByIdAndAuthor(id, user)
-                .orElseThrow(() -> new IllegalArgumentException("수정 권한이 없습니다"));
+                .orElseThrow(() -> new UnauthorizedException("수정 권한이 없습니다"));
 
         post.update(request.getTitle(), request.getContent());
         return PostResponse.from(post);
@@ -73,12 +78,27 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
     public void deletePost(Long id, String userEmail) {
         User user = userService.findUserByEmail(userEmail);
         T post = postRepository.findByIdAndAuthor(id, user)
-                .orElseThrow(() -> new IllegalArgumentException("삭제 권한이 없습니다"));
+                .orElseThrow(() -> new UnauthorizedException("삭제 권한이 없습니다"));
 
         postRepository.delete(post);
     }
 
-    public Page<PostResponse> searchPosts(String keyword, int page, int size) {
+    @Transactional
+    public void deletePostByAdmin(Long postId, String adminEmail) {
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new UserNotFoundException(adminEmail));
+
+        if (!admin.isAdmin()) {
+            throw new UnauthorizedException("관리자 권한이 필요합니다.");
+        }
+
+        T post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
+
+        postRepository.delete(post);
+    }
+
+public Page<PostResponse> searchPosts(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return postRepository.findByTitleContainingOrContentContaining(
                         keyword, keyword, pageable)
@@ -87,6 +107,6 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
 
     public T getPostEntity(Long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다"));
+                .orElseThrow(() -> new PostNotFoundException(id));
     }
 }

@@ -1,6 +1,7 @@
 package jp.gamers_ranc.DTO.user;
 
 import jp.gamers_ranc.Entity.user.User;
+import jp.gamers_ranc.Entity.user.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,6 +14,7 @@ public class UserResponse {
     private Long id;
     private String email;
     private String nickname;
+    private UserRole role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -21,6 +23,7 @@ public class UserResponse {
                 user.getId(),
                 user.getEmail(),
                 user.getNickname(),
+                user.getRole(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
