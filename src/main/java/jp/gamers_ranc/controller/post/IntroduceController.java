@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/IntroducePost")
+@RequestMapping("/api/introducePost")
 @RequiredArgsConstructor
 @Tag(name = "Introduce Board", description = "게임소개 게시판 API")
 public class IntroduceController {
