@@ -60,8 +60,8 @@ dependencies {
 }
 
 bootJar {
-    archiveFileName = 'Games_RanC-1.0.jar'
-    mainClass.set('jp.games_ranc.GamesRanCApplication')
+    archiveFileName = 'Gamers_RanC-1.0.jar'
+    mainClass.set('jp.gamers_ranc.GamersRanCApplication')
     manifest {
         attributes(
                 'Spring-Profile': 'prod'
