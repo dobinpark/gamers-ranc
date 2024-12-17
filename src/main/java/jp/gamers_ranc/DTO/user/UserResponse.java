@@ -14,6 +14,7 @@ public class UserResponse {
     private Long id;
     private String email;
     private String nickname;
+    private Long point;
     private UserRole role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -23,6 +24,7 @@ public class UserResponse {
                 user.getId(),
                 user.getEmail(),
                 user.getNickname(),
+                user.getPoint(),
                 user.getRole(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()

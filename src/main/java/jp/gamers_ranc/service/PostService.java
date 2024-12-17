@@ -4,10 +4,13 @@ import jp.gamers_ranc.DTO.post.PostCreateRequest;
 import jp.gamers_ranc.DTO.post.PostResponse;
 import jp.gamers_ranc.DTO.post.PostUpdateRequest;
 import jp.gamers_ranc.Entity.post.Post;
+import jp.gamers_ranc.Entity.user.PointHistory;
+import jp.gamers_ranc.Entity.user.PointRule;
 import jp.gamers_ranc.Entity.user.User;
 import jp.gamers_ranc.exception.PostNotFoundException;
 import jp.gamers_ranc.exception.UnauthorizedException;
 import jp.gamers_ranc.exception.UserNotFoundException;
+import jp.gamers_ranc.repository.PointHistoryRepository;
 import jp.gamers_ranc.repository.PostRepository;
 import jp.gamers_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +33,26 @@ public class PostService <T extends Post> {
     private final PostRepository<T> postRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final PointHistoryRepository pointHistoryRepository;
 
     // 게시글 생성
     @Transactional
-    public PostResponse createPost(String userEmail, PostCreateRequest request, BiFunction<PostCreateRequest, User, T> creator) {
-        User user = userService.findUserByEmail(userEmail);
+    public PostResponse createPost(String email, PostCreateRequest request,
+                                   BiFunction<PostCreateRequest, User, T> creator) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+
         T post = creator.apply(request, user);
+        T savedPost = postRepository.save(post);
+
+        // 포인트 적립
+        user.addPoint(PointRule.POST_CREATION.getPoints());
+        pointHistoryRepository.save(PointHistory.builder()
+                .user(user)
+                .pointAmount(PointRule.POST_CREATION.getPoints())
+                .description(PointRule.POST_CREATION.getDescription())
+                .build());
+
         return PostResponse.from(postRepository.save(post));
     }
 

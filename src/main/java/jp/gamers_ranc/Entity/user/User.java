@@ -26,6 +26,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String nickname;
 
+    @Column(columnDefinition = "bigint default 0")
+    private Long point = 0L;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role = UserRole.USER; // 기본값은 일반 사용자
@@ -41,6 +44,14 @@ public class User extends BaseTimeEntity {
     public void update(String nickname, String password) {
         if (nickname != null) this.nickname = nickname;
         if (password != null) this.password = password;
+    }
+
+    public void addPoint(Long amount) {
+        this.point += amount;
+    }
+
+    public void subtractPoint(Long amount) {
+        this.point = Math.max(0, this.point - amount);
     }
 
     public boolean isAdmin() {
