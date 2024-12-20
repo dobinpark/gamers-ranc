@@ -14,4 +14,3 @@ spring:
     username: admin
     password: ddgh0919
     driver-class-name: com.mysql.cj.jdbc.Driver
-20
