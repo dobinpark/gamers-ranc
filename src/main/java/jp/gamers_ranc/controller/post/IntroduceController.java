@@ -5,12 +5,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jp.gamers_ranc.DTO.post.PageResponse;
 import jp.gamers_ranc.DTO.post.PostCreateRequest;
 import jp.gamers_ranc.DTO.post.PostResponse;
 import jp.gamers_ranc.DTO.post.PostUpdateRequest;
 import jp.gamers_ranc.Entity.post.IntroducePost;
 import jp.gamers_ranc.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -60,9 +64,14 @@ public class IntroduceController {
     @Operation(summary = "게시글 목록 조회", description = "게임소개 게시판의 모든 게시글을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
-        List<PostResponse> response = postService.getAllPosts();
-        return ResponseEntity.ok(response);
+    public ResponseEntity<PageResponse<PostResponse>> getPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        return ResponseEntity.ok(postService.getPagedPosts(pageable));
     }
 
     // 게시글 수정
