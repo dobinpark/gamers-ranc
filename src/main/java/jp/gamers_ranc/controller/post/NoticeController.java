@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,7 +72,9 @@ public class NoticeController {
             @RequestParam(defaultValue = "desc") String direction) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        return ResponseEntity.ok(postService.getPagedPosts(pageable));
+        Page<PostResponse> postPage = postService.getPagedPosts(pageable);
+        PageResponse<PostResponse> pageResponse = new PageResponse<>(postPage);
+        return ResponseEntity.ok(pageResponse);
     }
 
     // 게시글 수정

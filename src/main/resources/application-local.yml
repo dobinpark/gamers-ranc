@@ -5,19 +5,29 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
-    database-platform: org.hibernate.dialect.H2Dialect
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/gamers_ranc?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: ddgh930810
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   h2:
     console:
-      enabled: true
+      enabled: false
       path: /h2-console
       settings:
         web-allow-others: true
+
+server:
+  port: 80
+
+springdoc:
+  swagger-ui:
+    path: /swagger

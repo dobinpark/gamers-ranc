@@ -8,9 +8,16 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
 
   datasource:
     url: jdbc:mysql://database-1.cxk3q2vynsyj.ap-northeast-2.rds.amazonaws.com:3306/Gamers?useSSL=false&serverTimezone=UTC
     username: admin
     password: ddgh0919
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+springdoc:
+  swagger-ui:
+    path: /swagger

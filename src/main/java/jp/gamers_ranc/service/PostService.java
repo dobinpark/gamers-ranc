@@ -73,8 +73,7 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
     }
 
     // 페이징 처리된 게시글 목록 조회
-    public Page<PostResponse> getPagedPosts(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    public Page<PostResponse> getPagedPosts(Pageable pageable) {
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .map(PostResponse::from);
     }

@@ -35,7 +35,7 @@ public class SecurityConfig {
                         // H2 콘솔 접근 허용
                         .requestMatchers("/h2-console/**").permitAll()
                         // Swagger UI 접근 허용
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger").permitAll()
                         // API 엔드포인트 접근 허용
                         .requestMatchers("/api/users/**").permitAll()
                         // 관리자 전용 API
