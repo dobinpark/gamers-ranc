@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/freePost")
+@RequestMapping("/freePost")
 @RequiredArgsConstructor
 @Tag(name = "Free Board", description = "자유 게시판 API")
 public class FreeController {

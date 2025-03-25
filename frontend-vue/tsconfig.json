@@ -1,11 +1,47 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "strict": true,
+        "jsx": "preserve",
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "useDefineForClassFields": true,
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "types": [
+            "webpack-env"
+        ],
+        "paths": {
+            "@/*": ["./src/*"],
+            "@/components/*": ["src/components/*"],
+            "@/views/*": ["src/views/*"]
+        },
+        "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
     },
-    {
-      "path": "./tsconfig.app.json"
-    }
-  ]
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "src/**/*.json",
+        "tests/**/*.ts",
+        "tests/**/*.tsx",
+        "*.js",
+        "*.ts",
+        ".eslintrc.js",
+        "vue.config.js",
+        "src/types/*.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        ".eslintrc.js",
+        "vue.config.js",
+        "babel.config.js"
+    ]
 }

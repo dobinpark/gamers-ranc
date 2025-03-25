@@ -24,6 +24,9 @@ public class User extends BaseTimeEntity {
     private String password;
 
     @Column(nullable = false)
+    private String phoneNumber;
+
+    @Column(nullable = false)
     private String nickname;
 
     @Column(columnDefinition = "bigint default 0")
@@ -34,16 +37,18 @@ public class User extends BaseTimeEntity {
     private UserRole role = UserRole.USER; // 기본값은 일반 사용자
 
     @Builder
-    public User(String email, String password, String nickname, UserRole role) {
+    public User(String email, String password, String nickname, String phoneNumber, UserRole role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
+        this.phoneNumber = phoneNumber;
         this.role = UserRole.USER;
     }
 
-    public void update(String nickname, String password) {
+    public void update(String nickname, String password, String phoneNumber) {
         if (nickname != null) this.nickname = nickname;
         if (password != null) this.password = password;
+        if (phoneNumber != null) this.phoneNumber = phoneNumber;
     }
 
     public void addPoint(Long amount) {

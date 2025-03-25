@@ -5,58 +5,45 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jp.gamers_ranc.DTO.user.LoginRequest;
-import jp.gamers_ranc.DTO.user.SignupRequest;
-import jp.gamers_ranc.DTO.user.UserResponse;
+import jp.gamers_ranc.DTO.user.UserResponseDto;
 import jp.gamers_ranc.DTO.user.UserUpdateRequest;
 import jp.gamers_ranc.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 @Tag(name = "User", description = "사용자 API")
 public class UserController {
 
     private final UserService userService;
 
-    // 회원가입
-    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "회원가입 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청")
-    })
-    @PostMapping("/signup")
-    public ResponseEntity<UserResponse> signup(@Valid @RequestBody SignupRequest request) {
-        UserResponse response = userService.signup(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
 
-    // 로그인
-    @Operation(summary = "로그인", description = "사용자 로그인을 처리합니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그인 성공"),
-            @ApiResponse(responseCode = "401", description = "인증 실패")
-    })
-    @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request) {
-        UserResponse response = userService.login(request);
+    // 인증된 사용자 정보 조회
+    @Operation(summary = "내 정보 조회", description = "인증된 사용자의 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "조회 성공")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
+        UserResponseDto response = userService.findByEmail(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
 
-    // 모든 유저 조회
-    @Operation(summary = "전체 사용자 조회", description = "모든 사용자 정보를 조회합니다.")
+
+    // 모든 유저 조회 (관리자용)
+    @Operation(summary = "전체 사용자 조회", description = "모든 사용자 정보를 조회합니다. (관리자용)")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        List<UserResponse> users = userService.findAll();
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        List<UserResponseDto> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
+
 
     // 특정 유저 조회
     @Operation(summary = "회원 정보 조회", description = "이메일로 회원 정보를 조회합니다.")
@@ -65,36 +52,39 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "사용자 없음")
     })
     @GetMapping("/{email}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable String email) {
-        UserResponse response = userService.findByEmail(email);
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable String email) {
+        UserResponseDto response = userService.findByEmail(email);
         return ResponseEntity.ok(response);
     }
+
 
     // 유저 정보 수정
-    @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다.")
+    @Operation(summary = "내 정보 수정", description = "로그인한 사용자의 정보를 수정합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "수정 성공"),
-            @ApiResponse(responseCode = "404", description = "사용자 없음")
+            @ApiResponse(responseCode = "401", description = "인증 실패")
     })
-    @PutMapping("/{email}")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable String email,
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDto> updateMyInfo(
+            @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody UserUpdateRequest request) {
-        UserResponse response = userService.updateUser(email, request);
+        UserResponseDto response = userService.updateUser(userDetails.getUsername(), request);
         return ResponseEntity.ok(response);
     }
 
-    // 유저 삭제
-    @Operation(summary = "회원 탈퇴", description = "회원 정보를 삭제합니다.")
+
+    // 유저 삭제 (본인 계정)
+    @Operation(summary = "회원 탈퇴", description = "로그인한 사용자의 계정을 삭제합니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "삭제 성공"),
-            @ApiResponse(responseCode = "404", description = "사용자 없음")
+            @ApiResponse(responseCode = "401", description = "인증 실패")
     })
-    @DeleteMapping("/{email}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String email) {
-        userService.deleteUser(email);
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal UserDetails userDetails) {
+        userService.deleteUser(userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
+
 
     // 이메일 중복 확인
     @Operation(summary = "이메일 중복 확인", description = "회원가입 시 이메일 중복을 확인합니다.")
@@ -107,6 +97,7 @@ public class UserController {
         boolean exists = userService.existsByEmail(email);
         return ResponseEntity.ok(exists);
     }
+
 
     // 닉네임 중복 확인
     @Operation(summary = "닉네임 중복 확인", description = "회원가입 시 닉네임 중복을 확인합니다.")

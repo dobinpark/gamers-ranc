@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,17 +27,18 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class PostService <T extends Post> {
+public class PostService<T extends Post> {
 
     private final PostRepository<T> postRepository;
     private final UserService userService;
     private final UserRepository userRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
+
     // 게시글 생성
     @Transactional
     public PostResponse createPost(String email, PostCreateRequest request,
-                                   BiFunction<PostCreateRequest, User, T> creator) {
+            BiFunction<PostCreateRequest, User, T> creator) {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
 
@@ -56,6 +56,7 @@ public class PostService <T extends Post> {
         return PostResponse.from(postRepository.save(post));
     }
 
+
     // 게시글 조회
     @Transactional
     public PostResponse getPost(Long id) {
@@ -65,18 +66,21 @@ public class PostService <T extends Post> {
         return PostResponse.from(post);
     }
 
+
     // 게시글 목록 조회
     public List<PostResponse> getAllPosts() {
-return postRepository.findAllByOrderByCreatedAtDesc().stream()
+        return postRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(PostResponse::from)
                 .collect(Collectors.toList());
     }
+
 
     // 페이징 처리된 게시글 목록 조회
     public Page<PostResponse> getPagedPosts(Pageable pageable) {
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .map(PostResponse::from);
     }
+
 
     // 게시글 수정
     @Transactional
@@ -89,6 +93,7 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
         return PostResponse.from(post);
     }
 
+
     // 게시글 삭제
     @Transactional
     public void deletePost(Long id, String userEmail) {
@@ -99,6 +104,8 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
         postRepository.delete(post);
     }
 
+
+    // 관리자 게시글 삭제
     @Transactional
     public void deletePostByAdmin(Long postId, String adminEmail) {
         User admin = userRepository.findByEmail(adminEmail)
@@ -114,13 +121,17 @@ return postRepository.findAllByOrderByCreatedAtDesc().stream()
         postRepository.delete(post);
     }
 
-public Page<PostResponse> searchPosts(String keyword, int page, int size) {
+
+    // 게시글 검색
+    public Page<PostResponse> searchPosts(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return postRepository.findByTitleContainingOrContentContaining(
-                        keyword, keyword, pageable)
+                keyword, keyword, pageable)
                 .map(PostResponse::from);
     }
 
+
+    // 게시글 엔티티 조회
     public T getPostEntity(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException(id));

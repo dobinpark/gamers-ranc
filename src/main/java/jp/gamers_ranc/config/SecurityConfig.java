@@ -1,5 +1,7 @@
 package jp.gamers_ranc.config;
 
+import jp.gamers_ranc.config.jwt.JwtAuthenticationFilter;
+import jp.gamers_ranc.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,11 +10,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,6 +41,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         // Swagger UI 접근 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger").permitAll()
+                        // 로그인, 회원가입 API는 누구나 접근 가능
+                        .requestMatchers("/api/auth/**").permitAll()
                         // API 엔드포인트 접근 허용
                         .requestMatchers("/api/users/**").permitAll()
                         // 관리자 전용 API
@@ -44,10 +51,14 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                // 세션 관리 비활성화 (JWT 사용 예정이므로)
+                // 세션 관리 비활성화 (JWT 사용)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+                )
+                
+                // JWT 필터 추가
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), 
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

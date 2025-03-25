@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/qnaPost")
+@RequestMapping("/qnaPost")
 @RequiredArgsConstructor
 @Tag(name = "Qna Board", description = "질문 게시판 API")
 public class QnaController {

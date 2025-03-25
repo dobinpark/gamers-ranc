@@ -57,6 +57,9 @@ dependencies {
 
     // Jakarta EE 의존성 추가
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+
+    // DevTools
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 }
 
 bootJar {

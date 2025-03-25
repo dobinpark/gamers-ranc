@@ -1,12 +1,15 @@
 package jp.gamers_ranc.service;
 
-import jp.gamers_ranc.DTO.user.LoginRequest;
-import jp.gamers_ranc.DTO.user.SignupRequest;
-import jp.gamers_ranc.DTO.user.UserResponse;
+import jp.gamers_ranc.DTO.jwt.TokenDto;
+import jp.gamers_ranc.DTO.user.UserLoginRequestDto;
+import jp.gamers_ranc.DTO.user.UserResponseDto;
+import jp.gamers_ranc.DTO.user.UserSignupRequestDto;
 import jp.gamers_ranc.DTO.user.UserUpdateRequest;
 import jp.gamers_ranc.Entity.user.User;
+import jp.gamers_ranc.config.jwt.JwtTokenProvider;
 import jp.gamers_ranc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,55 +24,63 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+
 
     // 회원가입 (Create)
     @Transactional
-    public UserResponse signup(SignupRequest request) {
+    public UserResponseDto signup(UserSignupRequestDto request) {
         // 중복 검증
         validateSignup(request);
 
         // 새로운 유저 생성 및 저장
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .nickname(request.getNickname())
-                .build();
-
+        User user = request.toEntity(passwordEncoder.encode(request.getPassword()));
         User savedUser = userRepository.save(user);
-        return UserResponse.from(savedUser);
+
+        return new UserResponseDto(savedUser);
     }
 
-    // 로그인 (Read)
-    public UserResponse login(LoginRequest request) {
+
+    // 로그인 및 JWT 토큰 발급
+    public TokenDto login(UserLoginRequestDto request) {
         // 이메일로 유저 조회
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
+                .orElseThrow(() -> new BadCredentialsException("존재하지 않는 이메일입니다"));
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
+            throw new BadCredentialsException("비밀번호가 일치하지 않습니다");
         }
 
-        return UserResponse.from(user);
+        // JWT 토큰 생성
+        String token = jwtTokenProvider.createToken(user.getEmail(), user.getRole());
+
+        return TokenDto.builder()
+                .token(token)
+                .email(user.getEmail())
+                .build();
     }
+
 
     // 이메일로 유저 조회 (Read)
-    public UserResponse findByEmail(String email) {
+    public UserResponseDto findByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
-        return UserResponse.from(user);
+        return new UserResponseDto(user);
     }
 
+
     // 모든 유저 조회 (Read)
-    public List<UserResponse> findAll() {
+    public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream()
-                .map(UserResponse::from)
+                .map(UserResponseDto::new)
                 .collect(Collectors.toList());
     }
 
+
     // 유저 정보 수정 (Update)
     @Transactional
-    public UserResponse updateUser(String email, UserUpdateRequest request) {
+    public UserResponseDto updateUser(String email, UserUpdateRequest request) {
         // 기존 유저 조회
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
@@ -82,14 +93,14 @@ public class UserService {
         // 유저 정보 업데이트
         user.update(
                 request.getNickname(),
-                request.getPassword() != null ?
-                        passwordEncoder.encode(request.getPassword()) : null
-        );
+                request.getPassword() != null ? passwordEncoder.encode(request.getPassword()) : null,
+                request.getPhoneNumber());
 
         // 변경된 유저 정보 저장
         User updatedUser = userRepository.save(user);
-        return UserResponse.from(updatedUser);
+        return new UserResponseDto(updatedUser);
     }
+
 
     // 유저 삭제 (Delete)
     @Transactional
@@ -99,17 +110,19 @@ public class UserService {
         userRepository.delete(user);
     }
 
+
     // 이메일 존재 여부 확인
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
+
 
     // 닉네임 존재 여부 확인
     public boolean existsByNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
 
-    private void validateSignup(SignupRequest request) {
+    private void validateSignup(UserSignupRequestDto request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다");
         }
@@ -123,6 +136,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다");
         }
     }
+
 
     // findUserByEmail 메서드 추가
     public User findUserByEmail(String email) {

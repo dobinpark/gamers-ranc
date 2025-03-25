@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/noticePost")
+@RequestMapping("/noticePost")
 @RequiredArgsConstructor
 @Tag(name = "Notice Board", description = "공지사항 게시판 API")
 public class NoticeController {
